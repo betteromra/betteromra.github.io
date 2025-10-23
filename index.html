@@ -1,11 +1,312 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Portfolio</title>
+  <title>My White Page</title>
+  <style>
+    /* Make the background completely white and text black */
+    body,
+    html {
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      background-color: #fffef4;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    .background-video {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      width: 100%;
+      height: 100%;
+    }
+
+    .background-video iframe {
+      position: absolute;
+      width: calc(90vh * 16 / 9);
+      height: calc(100vw * 9 / 16);
+
+      min-width: 130%;
+      min-height: 130%;
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      width: 100vw;
+      height: 90vh;
+    }
+
+    /* Center content */
+    .hero-content {
+      position: absolute;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      width: 100%;
+      color: white;
+      text-align: center;
+      font-family: Arial, sans-serif;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1;
+    }
+
+    .hero-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10% 10%;
+    }
+
+    .hero-text {
+      font-size: 2.5rem;
+      color: #e5e2da;
+    }
+
+    .email-button {
+      border: #e5e2da solid 3px;
+      color: #e5e2da;
+      padding: 10px 20px;
+
+      text-decoration: none;
+      font-family: sans-serif;
+      cursor: pointer;
+      font-size: 1.5rem;
+      transition: 0.2s ease;
+    }
+
+    .email-button:hover {
+      border: transparent solid 3px;
+      color: #262624;
+      background-color: #fffef4;
+    }
+
+    .content {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      padding: 5%;
+    }
+
+    .game {
+      aspect-ratio: 1 / 1;
+      width: calc(50% - 10px);
+    }
+
+    .game-thumbnail {
+      position: relative;
+
+      width: 100%;
+      height: 100%;
+    }
+
+    .thumbnail-content {
+      color: #e5e2da;
+      position: relative;
+
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+
+      width: 100%;
+      height: 100%;
+
+      padding: 5%;
+      opacity: 0;
+
+      transition: 0.2s ease;
+      z-index: 2;
+    }
+
+    .game-thumbnail:hover .thumbnail-content {
+      background: rgba(0, 0, 0, 0.5);
+
+      opacity: 1;
+    }
+
+    .image-thumbnail {
+      position: absolute;
+
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+
+      transition: 0.2s ease;
+
+      opacity: 1;
+
+      z-index: 1;
+    }
+
+    .game-thumbnail:hover .image-thumbnail {
+      opacity: 0;
+    }
+
+    .image-thumbnail-over {
+      position: absolute;
+
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+
+      z-index: 0;
+    }
+
+    .game-content {
+      display: none;
+    }
+  </style>
 </head>
+
 <body>
-  
+
+  <div class="hero">
+    <div class="hero-content">
+      <div class="hero-container">
+        <p class="hero-text">Hello! I'm Omra, gameplay programmer driven by curiosity, collaboration and the joy of
+          bringing
+          game to life</p>
+        <a href="mailto:omra@betteromra.com" class="email-button">
+          Contact Me
+        </a>
+      </div>
+    </div>
+
+    <div class="background-video">
+      <iframe
+        src="https://www.youtube.com/embed/xerVvQ2-Uc4?autoplay=1&mute=1&loop=1&controls=0&modestbranding=1&rel=0&playlist=xerVvQ2-Uc4"
+        frameborder="0" allow="autoplay; fullscreen" title="Reel - Gabriel Belanger - 2025" allow="autoplay; fullscreen"
+        referrerpolicy="strict-origin-when-cross-origin"></iframe>
+    </div>
+  </div>
+
+  <!-- Content -->
+
+  <div class="content">
+
+  </div>
+
+  <script>
+
+    parent = 'content';
+
+    const games = {
+      parent: 'content',
+      list: [
+        {
+          name: "THE SIGNAL: Stranded on Sirenis",
+          description: "A survival crafting game where players explore diverse environments, gather resources, build bases and strategically combat or avoid hostile creatures on the alien world of Sirenis.",
+          content: ``
+        },
+        {
+          name: "The Melty Way",
+          description: "A puzzle-platformer where players control a shape-shifting slime, navigating vibrant levels, solving puzzles, avoiding traps and using creative movement to explore hidden paths and overcome challenges.",
+          content: ``
+        },
+        {
+          name: "Citywars Savage",
+          description: "An indie MMORPG combining fast-paced combat, sandbox building, questing, and cooperative PvE, with classless progression, gear upgrades and community-driven content creation.",
+          content: ``
+        },
+        {
+          name: "Zero Six Booting",
+          description: "",
+          content: ``
+        },
+        {
+          name: "Dream Catcher",
+          description: "",
+          content: ``
+        },
+        {
+          name: "Jeu Cuisine Orc",
+          description: "",
+          content: ``
+        },
+        {
+          name: "Plateformer Squelletron",
+          description: "",
+          content: ``
+        },
+        {
+          name: "Sorcière avec éclair de feu versus Chevaliers avec nimbus 2001 sauf que les balais sont interdit",
+          description: "",
+          content: ``
+        },
+        {
+          name: "Attaque des patates",
+          description: "",
+          content: ``
+        },
+        {
+          name: "Mille Etage",
+          description: "",
+          content: ``
+        },
+        {
+          name: "Hinvie Zible",
+          description: "",
+          content: ``
+        },
+        {
+          name: "First Game Tower Defense",
+          description: "",
+          content: ``
+        }
+      ]
+    };
+
+    for (let i = 0; i < games.list.length; i++) {
+      const game = games.list[i];
+      addGame(parent, game.name, game.description, game.content);
+    }
+
+    addGame(parent, name, description, content);
+
+    function addGame(parent, name, description, content) {
+
+      const contentDiv = document.querySelector("." + parent);
+
+      const trimmerName = name.replace(/[^a-zA-Z0-9]/g, "");
+
+      const imageMain = "background-image: url('Images/" + trimmerName + " main.jpg" + "');"
+      const imageGameplay = "background-image: url('Images/" + trimmerName + " gameplay.jpg" + "');"
+
+      name = '<h2>' + name + '</h2>';
+
+      description = '<p>' + description + '</p>';
+
+      const contentThumbnail = '<div class="thumbnail-content">' + name + description + '</div>';
+      const imageThumbnail = '<div class="image-thumbnail" style="' + imageMain + '"></div>';
+      const imageThumbnailOver = '<div class="image-thumbnail-over" style="' + imageGameplay + '"></div>';
+
+      const thumbnail = '<div class="game-thumbnail">' + contentThumbnail + imageThumbnail + imageThumbnailOver + '</div>';
+
+      content = '<div class="game-content">' + content + '</div>';
+
+      const game = '<div class="game">' + thumbnail + content + '</div>'
+
+      contentDiv.innerHTML += game;
+    }
+
+  </script>
 </body>
+
 </html>
