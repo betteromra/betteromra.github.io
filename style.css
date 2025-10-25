@@ -4,6 +4,7 @@ html {
   margin: 0;
   padding: 0;
   overflow-x: hidden;
+  font-family: 'Roboto', sans-serif;
   background-color: #fffef4;
 }
 
@@ -91,6 +92,7 @@ p {
   aspect-ratio: 16/13;
   max-width: 80vw;
   max-height: 80vh;
+  pointer-events: none;
 }
 
 .email-button {
