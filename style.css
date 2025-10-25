@@ -267,6 +267,10 @@ p {
 }
 
 .game-content {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+
   transform-origin: top;
   position: absolute;
   opacity: 0;
@@ -275,6 +279,7 @@ p {
   margin: 20px 40px 0 40px;
   padding: 30px;
   background-color: #f8f5eb;
+  color: #333331;
   left: 0;
   z-index: 15;
   pointer-events: none;
@@ -381,6 +386,9 @@ p {
 
 .game-content-header-logo img {
   width: 60%;
+  max-width: 600px;
+  max-height: 400px;
+  object-fit: contain;
 }
 
 
@@ -390,13 +398,13 @@ p {
   }
 }
 
-.game-content-header-title{
+.game-content-header-title {
   display: flex;
-  gap: 20px;
+  gap: 10px;
   flex-direction: column;
 }
 
-.game-content-header-links{
+.game-content-header-links {
   display: flex;
   justify-content: center;
   gap: 10px;
@@ -409,4 +417,47 @@ p {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+}
+
+.game-content-header {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.game-content-header-tag {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.game-genre,
+.game-style {
+  padding: 5px 10px;
+  background-color: #e5e2da;
+  border-radius: 999px;
+}
+
+.game-content-header-job {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.job-icon {
+  width: 15px;
+  height: 15px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.game-content-header-role,
+.game-content-header-team,
+.game-content-header-time {
+  display: flex;
+  gap: 5px;
+  align-items: center;
 }

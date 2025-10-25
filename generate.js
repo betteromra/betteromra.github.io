@@ -71,8 +71,9 @@ const allGames = {
       date: "Janurary 2025 ~ October 2025",
       technologies: [5, 1, 7, 8],
       description: "A survival crafting extraction shooter game where players explore diverse environments, gather resources, build bases and strategically combat on the alien planet.",
-      team: "21",
       role: "Gameplay Programmer",
+      team: 21,
+      time: "9 months",
       genre: ["Survival", "Crafting", "Extraction shooter", "Base building"],
       style: ["Science fiction", "Realistic", "Stylize"],
       link: ["https://store.steampowered.com/app/1830110/THE_SIGNAL_Stranded_on_Sirenis/"],
@@ -83,11 +84,12 @@ const allGames = {
     {
       name: "The Melty Way",
       logo: true,
-      date: "December 2022 ~ March 2026",
+      date: "December 2021 ~ Present", // December 2021 ~ March 2026
       technologies: [6, 0, 7, 8, 10],
       description: "A puzzle-platformer where players control a shape-shifting slime, navigating vibrant levels, solving puzzles, avoiding traps and using creative movement to explore hidden paths and overcome challenges.",
-      team: "2",
       role: "Game Programmer, Artist, Game Design, Marketer",
+      team: 2,
+      time: "4 years",
       genre: ["Plateformer", "Puzzle", "Adventure"],
       style: ["Pixel Art", "Fantasy"],
       link: ["https://store.steampowered.com/app/3990570/The_Melty_Way/"],
@@ -101,8 +103,9 @@ const allGames = {
       date: "Janurary 2021 ~ March 2021",
       technologies: [6],
       description: "An indie MMORPG combining fast-paced combat, sandbox building, questing and cooperative PvE. With classless progression, gear upgrades and community-driven content creation.",
-      team: "8",
       role: "Gameplay Programmer, Game Design",
+      team: 8,
+      time: "3 months",
       genre: ["MMORPG", "Sandbox", "Crafting", "Building"],
       style: ["Cartoon", "Cubic"],
       link: ["https://store.steampowered.com/app/910800/Citywars_Savage/"],
@@ -116,8 +119,9 @@ const allGames = {
       date: "March 2021 ~ April 2021",
       technologies: [6, 0, 7, 10],
       description: "A swift ninja armed with a deadly spear use a grappling hook, slow down time and rewind time in this intense, action-adventure plateformer.",
-      team: "1",
       role: "Game Programmer, Artist, Game Design",
+      team: 1,
+      time: "2 months",
       genre: ["Hack 'n' Slash", "Time manipulation", "Plateformer"],
       style: ["Pixel Art", "Science fiction"],
       link: ["https://betteromra.itch.io/zero-six-booting"],
@@ -131,8 +135,9 @@ const allGames = {
       date: "Feburary 2024 ~ April 2024",
       technologies: [6, 0, 7],
       description: "In this whimsical multiplayer platformer, you play as a tiny snail journeying through surreal dreamscapes. Work together with your friend to collect scattered dreams and keep the dreamer peacefully asleep.",
-      team: "8",
       role: "Gameplay Programmer",
+      team: 8,
+      time: "3 months",
       genre: ["Plateformer", "Coop"],
       style: ["Vector art", "Fantasy"],
       link: [],
@@ -146,7 +151,8 @@ const allGames = {
       date: "December 2020 ~ January 2021",
       technologies: [6, 0, 10],
       description: "An orc chef combines ingredients in precise sequences to create hearty meals. Each successful combination, boosts reputation and satisfies the tribe's hunger in a puzzle of timing and culinary mastery.",
-      team: "1",
+      team: 1,
+      time: "2 months",
       role: "Game Programmer, Artist, Game Design",
       genre: ["Match-3", "Puzzle"],
       style: ["Vector art", "Fantasy"],
@@ -161,8 +167,9 @@ const allGames = {
       date: "17 Feburary 2023 ~ 20 Feburary 2023",
       technologies: [6, 0, 10],
       description: "Play as a cunning outlaw in the Wild West, planning heists, dodging sheriffs and looting banks for fortune and freedom.",
-      team: "3",
       role: "Game Programmer, Artist, Game Design",
+      team: 3,
+      time: "3 days",
       genre: ["Stealth", "Extraction", "Time manipulation"],
       style: ["Far west", "Vector art"],
       link: ["https://toominio.itch.io/sightline"],
@@ -176,8 +183,9 @@ const allGames = {
       date: "October 2020 ~ December 2020",
       technologies: [6, 0, 7, 10],
       description: "A skeleton traverses an endlessly generated world, jumping across platforms, avoiding dangers and exploring haunting, ever-changing landscapes full of surprises.",
-      team: "2",
       role: "Game Programmer, Artist, Game Design",
+      team: 2,
+      time: "3 months",
       genre: ["Plateformer", "Procedural generation"],
       style: ["Dark Fantasy", "Vector art"],
       link: [],
@@ -191,8 +199,9 @@ const allGames = {
       date: "September 2020 ~ October 2020",
       technologies: [6, 0],
       description: "A strategic, turn-based adventure where you, a witch, navigate enemies, plan moves carefully and reach the finish line triumphantly.",
-      team: "1",
       role: "Game Programmer, Artist, Game Design",
+      team: 1,
+      time: "2 months",
       genre: ["Turn-Based", "Stealth"],
       style: ["Fantasy"],
       link: [],
@@ -206,8 +215,9 @@ const allGames = {
       date: "October 2020 ~ December 2020",
       technologies: [6, 0],
       description: "A humble village boy sets out on a thrilling RPG adventure, exploring vast lands, making loyal friends, engaging in strategic turn-based battles and confronting a powerful necromancer to save the world.",
-      team: "4",
       role: "Game Programmer",
+      team: 4,
+      time: "3 months",
       genre: ["RPG", "Turn-Based"],
       style: ["Dark Fantasy", "Vector art"],
       link: [],
@@ -221,8 +231,9 @@ const allGames = {
       date: "November 2020 ~ December 2020",
       technologies: [6, 0],
       description: "Build and manage your hotel empire, upgrade floors, attract guests, optimize profits, automate operations and watch income grow effortlessly.",
-      team: "1",
       role: "Game Programmer, Artist, Game Design",
+      team: 1,
+      time: "2 months",
       genre: ["Idle"],
       style: [],
       link: [],
@@ -236,8 +247,9 @@ const allGames = {
       date: "November 2019 ~ December 2019",
       technologies: [6, 0, 10],
       description: "Small prototype that lets you be a ghost in a graveyard and use different ability.",
-      team: "1",
       role: "Game Programmer, Artist, Game Design",
+      team: 1,
+      time: "2 months",
       genre: [],
       style: [],
       link: [],
@@ -251,8 +263,9 @@ const allGames = {
       date: "March 2017 ~ April 2027",
       technologies: [6, 0],
       description: "My first game ever, a tower defense where you strategically place towers, stop enemies, survive waves, defend your base.",
-      team: "1",
       role: "Game Programmer, Artist, Game Design",
+      team: 1,
+      time: "2 weeks",
       genre: ["Tower defense"],
       style: [],
       link: [],
@@ -337,10 +350,20 @@ function addGame(parent, game) {
 
   contentHeaderHtml += contentHeaderTitleHtml;
 
-  contentHeaderHtml += '<div class="game-content-header-team">' + game.team + '</div>';
-  contentHeaderHtml += '<div class="game-content-header-genre">' + createArrayElement(game.genre, "game-genre") + '</div>';
-  contentHeaderHtml += '<div class="game-content-header-style">' + createArrayElement(game.style, "game-style") + '</div>';
-  contentHeaderHtml += '<div class="game-content-header-role">' + game.role + '</div>';
+  contentHeaderHtml += '<div class="game-content-header-tag">' + createArrayElement(game.genre, "game-genre") + createArrayElement(game.style, "game-style") + '</div>';
+
+  jobHtml = '<div class="game-content-header-job">';
+
+  iconImage = '<img class="job-icon" src="Images/Icons/role.svg">';
+  jobHtml += '<div class="game-content-header-role">' + iconImage + game.role + '</div>';
+  iconImage = '<img class="job-icon" src="Images/Icons/team.svg">';
+  jobHtml += '<div class="game-content-header-team">' + iconImage + game.team + '</div>';
+  iconImage = '<img class="job-icon" src="Images/Icons/time.svg">';
+  jobHtml += '<div class="game-content-header-time">' + iconImage + game.time + '</div>';
+
+  jobHtml += '</div>';
+
+  contentHeaderHtml += jobHtml;
 
   contentHeaderHtml += '</div>';
 
@@ -434,17 +457,4 @@ function getImageTechnology(name, classImage) {
   const imageTechnology = "background-image: url('Images/Technologies/" + name + ".png');";
 
   return '<div class="' + classImage + '" style="' + imageTechnology + '"></div>';
-}
-
-function getChildPerRow() {
-
-  if (window.innerWidth < 775) {
-    return 1;
-  } else if (window.innerWidth < 1120) {
-    return 2;
-  } else if (window.innerWidth < 1465) {
-    return 3;
-  } else {
-    return 4;
-  }
 }
