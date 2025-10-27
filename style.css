@@ -8,17 +8,6 @@ html {
   background-color: #fffef4;
 }
 
-@media (min-width: 2560px) {
-  html {
-    display: flex;
-    justify-content: center;
-  }
-
-  body {
-    width: 2560px;
-  }
-}
-
 * {
   box-sizing: border-box;
 }
@@ -93,6 +82,30 @@ p {
   max-width: 80vw;
   max-height: 80vh;
   pointer-events: none;
+}
+
+@media (min-width: 1600px) {
+  html {
+    display: flex;
+    justify-content: center;
+  }
+
+  body {
+    width: 1600px;
+  }
+
+  .background-video iframe {
+    width: calc(90vh * 16 / 9);
+    height: calc(1600px * 9 / 16);
+  }
+
+  .hero {
+    width: 1600px;
+  }
+
+  .hero-signature {
+    max-width: 1280px;
+  }
 }
 
 .email-button {
@@ -391,10 +404,25 @@ p {
   object-fit: contain;
 }
 
+.game-content-header-no-logo {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  line-height: 1;
+  font-size: 4rem;
+  text-align: center;
+}
+
 
 @media (max-width: 500px) {
   .game-content-header-logo img {
     width: 80%;
+  }
+}
+
+@media (max-width: 650px) {
+  .game-content-header-no-logo {
+    font-size: 3rem;
   }
 }
 
@@ -460,4 +488,10 @@ p {
   display: flex;
   gap: 5px;
   align-items: center;
+}
+
+.game-content-main {
+  display: flex;
+  gap: 20px;
+  flex-direction: column;
 }
