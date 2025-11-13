@@ -9,7 +9,13 @@ gamesThumbnail.forEach(gameThumbnail => {
     const gamesToRemoveOpen = document.querySelectorAll('.open');
 
     gamesToRemoveOpen.forEach(gameToRemoveOpen => {
-      if (gameToRemoveOpen != game) gameToRemoveOpen.classList.remove('open');
+      if (gameToRemoveOpen != game) {
+        if (gameToRemoveOpen.classList.contains('open')) {
+          gameToRemoveOpen.classList.remove('open');
+
+          unloadVideo(gameToRemoveOpen);
+        }
+      }
     });
 
     game.classList.toggle('open');
@@ -41,14 +47,42 @@ gamesThumbnail.forEach(gameThumbnail => {
       gameParent.insertBefore(gameContentSpace, gameParent.children[newIndexGameContentSpace]);
 
       gameContentSpace.style.position = "relative";
+
+      // Load all the video
+      loadVideo(game)
+
     } else {
       gameContentSpace.style.height = 0;
       setTimeout(() => {
         gameContentSpace.style.position = "absolute";
       }, 200);
+
+      // Unload all the video
+      unloadVideo(game);
     }
   });
 });
+
+function unloadVideo(parent) {
+  const videos = parent.querySelectorAll("video");
+
+  videos.forEach(v => {
+    v.pause();
+    v.removeAttribute("src");
+    v.load(); // Unload it
+  });
+}
+
+function loadVideo(parent) {
+  const videos = parent.querySelectorAll("video");
+
+  videos.forEach(v => {
+    const realSrc = v.getAttribute("data-src");
+    v.setAttribute("src", realSrc);
+    v.load();
+    v.play();
+  });
+}
 
 function syncHeight(gameContentSpace, gameContent) {
 
@@ -94,3 +128,20 @@ function getChildPerRow() {
     return 4;
   }
 }
+
+const videos = document.querySelectorAll('.scroll-video');
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    const video = entry.target;
+    if (entry.isIntersecting) {
+      video.play();
+    } else {
+      video.pause();
+    }
+  });
+}, {
+  threshold: 0.5 // play when 50% of the video is visible
+});
+
+videos.forEach(video => observer.observe(video));

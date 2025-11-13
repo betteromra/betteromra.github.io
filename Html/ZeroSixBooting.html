@@ -1,0 +1,34 @@
+<h3>Physics-based movement and rewind system</h3>
+<p>
+  This project was heavily inspired by
+  <a href="https://store.steampowered.com/app/460950/Katana_ZERO/" target="_blank">Katana ZERO</a>
+  and focused on creating fast-paced,
+  physics-driven gameplay. The most technically challenging part of development involved implementing
+  smooth character and enemy movement across sloped surfaces while maintaining a
+  consistent velocity regardless of terrain inclination.
+</p>
+<p>
+  To achieve this, I had to refine the movement physics by adjusting
+  Rigidbody2D forces and custom velocity calculations, ensuring both the player and enemies
+  preserved uniform motion across varying slope gradients. This required careful handling of
+  raycasts and normal vectors to maintain grounded movement and prevent speed fluctuations.
+</p>
+<p>
+  One of the core mechanics I implemented was a rewind system,
+  which involved capturing and storing the player's positional data over time.
+  The system continuously recorded the player's transform.position at each frame,
+  and when triggered, it iterated backward through the stored data to restore the player's
+  previous states with precise temporal accuracy. This mechanic introduced challenges in
+  data management and interpolation, especially when handling physics-based interactions.
+</p>
+<p>
+  Additionally, I designed a grappling hook mechanic using Unity's
+  SpringJoint2D component combined with a LineRenderer for visual feedback.
+  The grappling system allowed the player to attach to walls dynamically, generating tension and
+  swing physics that enhanced both traversal and combat fluidity.
+</p>
+<p>
+  Overall, this project deepened my understanding of 2D physics simulation,
+  data-driven rewind mechanics and procedural animation techniques,
+  all of which contributed to a more polished and technically complex gameplay experience.
+</p>
