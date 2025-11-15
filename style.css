@@ -295,8 +295,7 @@ a:hover {
 
 .game-content {
   display: flex;
-  flex-direction: column;
-  gap: 40px;
+  justify-content: center;
 
   transform-origin: top;
   position: absolute;
@@ -304,13 +303,21 @@ a:hover {
   transform: scaleY(0);
   width: calc(100% - 80px);
   margin: 20px 40px 0 40px;
-  padding: 30px;
-  background-color: #f8f5eb;
-  color: #333331;
   left: 0;
   z-index: 15;
   pointer-events: none;
   overflow: hidden;
+}
+
+.game-container {
+  max-width: 1060px;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+
+  padding: 30px;
+  background-color: #f8f5eb;
+  color: #333331;
 }
 
 @media (hover: none) {
@@ -510,22 +517,32 @@ a:hover {
   flex-direction: column;
 }
 
-h3{
+h3 {
   font-size: 40px;
 }
 
-h4{
+h4 {
+  margin-top: 40px;
   font-size: 30px;
 }
 
-.image-video-container{
+h5 {
+  font-size: 20px;
+}
+
+.image-video-container {
   display: flex;
   justify-content: center;
 }
 
-.image-video-container *{
-    max-width: 1000px;
-    width: 100%;
+.image-video-container * {
+  max-width: 1000px;
+  width: 100%;
+}
+
+.image-video-container video {
+  max-width: 500px;
+  width: 100%;
 }
 
 code {
@@ -539,10 +556,12 @@ pre {
   border-radius: 8px;
   padding: 20px;
   overflow-x: auto;
+  max-height: 1000px;
 }
 
 code[class*="language-"] {
   color: #f8f8f2;
+  margin: 0 !important;
 }
 
 .token.comment {

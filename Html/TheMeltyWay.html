@@ -1,4 +1,4 @@
-<h3>First commerical project</h3>
+<h3>Complete 2D puzzle platformers</h3>
 
 <p>A platformer spanning 60 levels with an extensive variety of mechanics,
   interactive environments and player feedback systems. </p>
@@ -14,8 +14,8 @@
 <h4 id="Player-TheMeltyWay">Player</h4>
 
 <div class="image-video-container">
-  <video width="1000" autoplay loop muted playsinline preload="none"
-    data-src="Images/Contents/TheMeltyWay/Player-movement.mp4" src="" type="video/mp4">
+  <video width="500" loop muted playsinline preload="none" data-src="Images/Contents/TheMeltyWay/Player-movement.mp4"
+    src="" type="video/mp4">
     Your browser does not support the video tag.
   </video>
 </div>
@@ -23,6 +23,7 @@
 <ul>
   <li>Classic platformer mechanics with movement and jumping</li>
   <li>Slime changes size dynamically based on health</li>
+  <li>Slime size inflence max speed, acceleration, jump height and resistance</li>
   <li>Dashing ability to enhance mobility</li>
   <li>Wall jumping</li>
   <li>Soft-body physics with the slime's body jiggling naturally during walking, running, jumping and dashing</li>
@@ -49,15 +50,9 @@
 
 <h5>Tutorial</h5>
 
-<p></p>
-<pre><code class="language-csharp">
-  
-</code>
-</pre>
-
 <div class="image-video-container">
-  <video width="1000" autoplay loop muted playsinline preload="none"
-    data-src="Images/Contents/TheMeltyWay/Remaping.mp4" src="" type="video/mp4">
+  <video width="500" loop muted playsinline preload="none" data-src="Images/Contents/TheMeltyWay/Remaping.mp4" src=""
+    type="video/mp4">
     Your browser does not support the video tag.
   </video>
 </div>
@@ -66,17 +61,21 @@
   <img src="Images/Contents/TheMeltyWay/Tutorial.jpg" loading="lazy">
 </div>
 
+<div class="image-video-container">
+  <img src="Images/Contents/TheMeltyWay/Controller-remaping.jpg" loading="lazy">
+</div>
+
 <h4 id="Hazards-TheMeltyWay">Hazards</h4>
 
 <div class="image-video-container">
-  <video width="1000" autoplay loop muted playsinline preload="none"
-    data-src="Images/Contents/TheMeltyWay/Hazards-movement.mp4" src="" type="video/mp4">
+  <video width="500" loop muted playsinline preload="none" data-src="Images/Contents/TheMeltyWay/Hazards-movement.mp4"
+    src="" type="video/mp4">
     Your browser does not support the video tag.
   </video>
 </div>
 
 <ul>
-  <li>Spikes: Size-sensitive damage</li>
+  <li>Spikes: Basic damage</li>
   <li>Saws: Programmed movement patterns</li>
   <li>Lasers: Periodic damage with visual indicators</li>
   <li>Cannons: Shoot projectiles periodically</li>
@@ -102,8 +101,8 @@
 <h4 id="Liquids-TheMeltyWay">Liquids</h4>
 
 <div class="image-video-container">
-  <video width="1000" autoplay loop muted playsinline preload="none"
-    data-src="Images/Contents/TheMeltyWay/Liquid-movement.mp4" src="" type="video/mp4">
+  <video width="500" loop muted playsinline preload="none" data-src="Images/Contents/TheMeltyWay/Liquid-movement.mp4"
+    src="" type="video/mp4">
     Your browser does not support the video tag.
   </video>
 </div>
@@ -114,78 +113,712 @@
   <li>Liquid light: Glows when submerged for a limited time</li>
   <li>Liquid slime: Causes player growth when submerged</li>
   <li>Mud: Deadly if slime remains inside too long</li>
+  <li>Wave effect</li>
 </ul>
-<pre><code class="language-csharp">
-  
-</code>
-</pre>
 
-<h5>Plateformer</h5>
-
-
-<h5>Tutorial</h5>
-
-<h4 id="Tools-TheMeltyWay">Tools</h4>
-Montrer le code pour ajouter un toggle
+<h5>Different type</h5>
 
 <div class="image-video-container">
-  <video width="1000" autoplay loop muted playsinline preload="none"
-    data-src="Images/Contents/TheMeltyWay/Tools-editor.mp4" src="" type="video/mp4">
+  <img src="Images/Contents/TheMeltyWay/All-liquids.jpg" loading="lazy">
+</div>
+<div class="image-video-container">
+  <img src="Images/Contents/TheMeltyWay/Shader-Liquid.jpg" loading="lazy">
+</div>
+
+<h5>Wave effect</h5>
+
+<div class="image-video-container">
+  <video width="500" loop muted playsinline preload="none" data-src="Images/Contents/TheMeltyWay/Wave-effect.mp4" src=""
+    type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+<pre><code class="language-csharp">public class LiquidPoint
+{
+  // Index of this point inside the spline.
+  int _index;
+  public int index { get => _index; set => _index = value; }
+
+  // Current position of the liquid point in the spline.
+  Vector2 _position;
+  public Vector2 position { get => _position; set => _position = value; }
+
+  // Original height of the point before any wave deformation.
+  float _initialHeight;
+  public float initialHeight { get => _initialHeight; }
+
+  // Reference to the liquid point directly to the left (if any).
+  LiquidPoint _leftLiquidPoint;
+  public LiquidPoint leftLiquidPoint { get => _leftLiquidPoint; set => _leftLiquidPoint = value; }
+
+  // Reference to the liquid point directly to the right (if any).
+  LiquidPoint _rightLiquidPoint;
+  public LiquidPoint rightLiquidPoint { get => _rightLiquidPoint; set => _rightLiquidPoint = value; }
+
+  // Spline this point belongs to, used for updating visual positions.
+  Spline _liquidSpline;
+
+  // Vertical wave velocity influencing deformation.
+  float _velocity = 0;
+  public float velocity { get => _velocity; set => _velocity = value; }
+
+  // Current wave height produced by sine motion.
+  float _wave = 0;
+
+  // Wave height from previous update, used to detect direction changes.
+  float _oldWave = 0;
+
+  // Current step of the sinusoidal wave animation.
+  float _step = 0;
+  public float step { get => _step; set => _step = value; }
+
+  // Used to offset the sine wave phase for neighbor propagation.
+  float _stepDisplacement = 0;
+  public float stepDisplacement { get => _stepDisplacement; set => _stepDisplacement = value; }
+
+  /// &lt;summary&gt;
+  /// Creates a new liquid point using a spline index and associates it with the given spline.
+  /// &lt;/summary&gt;
+  /// &lt;param name="pointIndex"&gt;Index of the point inside the spline.&lt;/param&gt;
+  /// &lt;param name="liquidSpline"&gt;The spline containing this point.&lt;/param&gt;
+  public LiquidPoint(int pointIndex, Spline liquidSpline)
+  {
+    _index = pointIndex;
+
+    _liquidSpline = liquidSpline;
+
+    _position = _liquidSpline.GetPosition(_index);
+    _initialHeight = _position.y;
+  }
+
+  /// &lt;summary&gt;
+  /// Updates the wave physics using a spring-based sinusoidal model.
+  /// Also propagates wave energy to left and right neighbors.
+  /// &lt;/summary&gt;
+  /// &lt;param name="springSwiftness"&gt;Controls wave speed and oscillation frequency.&lt;/param&gt;
+  /// &lt;param name="maximumExtension"&gt;Maximum allowed deformation above or below initial height.&lt;/param&gt;
+  public void WaveSpringUpdate(float springSwiftness, float maximumExtension)
+  {
+    // If nearly stopped, reset to initial height.
+    if (Matho.IsBetween(_velocity, -.05f, .05f))
+    {
+      if (_step == 0) return;
+      _liquidSpline.SetPosition(_index, new Vector2(_position.x, _initialHeight));
+      _step = 0;
+      return;
+    }
+
+    _oldWave = _wave;
+
+    // Calculate new wave using sinusoidal animation
+    _wave = Mathf.Sin(_step * Mathf.PI * springSwiftness + _stepDisplacement) * Mathf.Abs(_velocity);
+
+    // Detect wave direction, propagate wave to neighbors
+    if (Mathf.Sign(_wave) != Mathf.Sign(_oldWave) && _step != 0)
+    {
+      float neightboorVelocity = -_velocity * .9f;
+
+      if (Matho.IsBetween(neightboorVelocity, -.05f, .05f)) neightboorVelocity = 0;
+
+      PropagateWaveToNeighbor(_leftLiquidPoint, neightboorVelocity);
+      PropagateWaveToNeighbor(_rightLiquidPoint, neightboorVelocity);
+    }
+
+
+    // Slow down wave velocity over time
+    _velocity *= .9925f;
+
+    // Clamp wave height limits
+    _velocity = Mathf.Clamp(_velocity, -maximumExtension, maximumExtension);
+
+    Vector2 newPosition = new(_position.x, _initialHeight + _wave);
+    _step += .1f;
+
+    // Update spline visually
+    _liquidSpline.SetPosition(_index, newPosition);
+    _position = newPosition;
+
+    Smoothing(maximumExtension);
+  }
+
+  /// &lt;summary&gt;
+  /// Attempts to propagate wave velocity to a neighboring LiquidPoint
+  /// if its current velocity is weaker than this point's velocity.
+  /// &lt;/summary&gt;
+  /// &lt;param name="neighbor"&gt;The neighboring LiquidPoint (left or right).&lt;/param&gt;
+  /// &lt;param name="neighborVelocity"&gt;Velocity to transfer to the neighbor.&lt;/param&gt;
+  void PropagateWaveToNeighbor(LiquidPoint neighbor, float neighborVelocity)
+  {
+    if (neighbor == null) return;
+
+    if (Mathf.Abs(neighbor.velocity) &lt; Mathf.Abs(velocity))
+    {
+      neighbor.velocity = neighborVelocity;
+      neighbor.stepDisplacement = -1f;
+
+      if (_step &lt; neighbor.step)
+        neighbor.step = 0;
+    }
+  }
+
+  /// &lt;summary&gt;
+  /// Adjusts tangent vectors to ensure smooth wave motion between neighboring points.
+  /// Prevents sharp edges when waves propagate.
+  /// &lt;/summary&gt;
+  /// &lt;param name="maximumExtension"&gt;Maximum wave amplitude, used to determine tangent behavior.&lt;/param&gt;
+  void Smoothing(float maximumExtension)
+  {
+    Vector2 leftTangent = CalculateTangent(Vector2.left, _leftLiquidPoint, maximumExtension);
+    Vector2 rightTangent = CalculateTangent(Vector2.right, _rightLiquidPoint, maximumExtension);
+
+    _liquidSpline.SetLeftTangent(_index, leftTangent);
+    _liquidSpline.SetRightTangent(_index, rightTangent);
+  }
+
+  /// &lt;summary&gt;
+  /// Calculates the tangent vector for a neighboring point (left or right),
+  /// based on this point's velocity, wave height, and maximum extension.
+  /// Returns Vector2.zero when no tangent should be applied.
+  /// &lt;/summary&gt;
+  /// &lt;param name="direction"&gt;Direction of tangent (Vector2.left or Vector2.right).&lt;/param&gt;
+  /// &lt;param name="neighbor"&gt;The neighbor to calculate tangent.&lt;/param&gt;
+  /// &lt;param name="maximumExtension"&gt;Maximum allowed wave extension.&lt;/param&gt;
+  /// &lt;returns&gt;The calculated tangent vector.&lt;/returns&gt;
+  Vector2 CalculateTangent(Vector2 direction, LiquidPoint neighbor, float maximumExtension)
+  {
+    if (neighbor != null)
+      return Vector2.zero;
+
+    Vector2 tangent = direction * Mathf.Abs(velocity) * 0.6f;
+
+    // Disable tangent if wave is too tall
+    if (_wave &gt; maximumExtension * 0.25f)
+      tangent = Vector2.zero;
+
+    return tangent;
+  }
+}
+
+public class Liquid : MonoBehaviour
+{
+  // How fast waves move.
+  [SerializeField] float _springSwiftness;
+  // Maximum allowed height or depth of a wave point
+  [SerializeField] float _maximumExtension;
+  // Speed reduction multiplier applied to objects entering the liquid
+  [SerializeField] float _speedRemoveInLiquid;
+  // How much the whole liquid object moves when toggled on
+  [SerializeField] float _positionDisplaceOnActivate;
+  // Time taken for the liquid to move up
+  [SerializeField] float _timeForLiquidGoingUp;
+  // Time taken for the liquid to move down
+  [SerializeField] float _timeForLiquidGoingDown;
+  // Velocity reduction applied to objects when they first enter the liquid
+  [SerializeField] protected float _velocityRemovedWhenEnter;
+  // Maximum vertical speed when exiting the liquid without moving
+  [SerializeField] protected float _velocityCapWhenNaturalExit;
+  // Custom gravitational force applied while an object is inside the liquid
+  [SerializeField] protected float _liquidGravity;
+  // Color of splash particle effects.
+  [SerializeField] Color _particleColor;
+
+  PolygonCollider2D _polygonCollider2D;
+  SpriteShapeController _spriteShapeController;
+  // All liquid lines, each containing multiple wave points.
+  protected LiquidPoint[][] _liquidLines;
+  ClassicToggle _toggle;
+  // Original position of the liquid before any animation.
+  Vector2 _basePosition;
+  Coroutine _animation;
+
+  void Awake()
+  {
+    _basePosition = transform.position;
+
+    if (_timeForLiquidGoingDown == 0) _timeForLiquidGoingDown = _timeForLiquidGoingUp;
+  }
+  protected virtual void Start()
+  {
+    _toggle = GetComponent&lt;ClassicToggle&gt;();
+    _toggle.onActivate += ActivateAddOn;
+
+    _polygonCollider2D = GetComponent&lt;PolygonCollider2D&gt;();
+    _spriteShapeController = GetComponent&lt;SpriteShapeController&gt;();
+
+    // Touch event connections, help to get more control on collision
+    TouchEnter touchEnter = GetComponent&lt;TouchEnter&gt;();
+    touchEnter.onTouch += OnTouchEnterAddOn;
+    touchEnter.onExitTouch += OnTouchExitAddOn;
+
+    Spline liquidSpline = _spriteShapeController.spline;
+
+    List&lt;LiquidPoint&gt; leftCornerLiquidPoint = new List&lt;LiquidPoint&gt;();
+
+    int liquidSplinePointCount = liquidSpline.GetPointCount();
+
+    /// Build left and right liquid points
+    for (int i = 0; i &lt; liquidSplinePointCount; i++)
+    {
+      int leftCornerPointIndex = UnityExtension.ValidateIndex(i - 1, liquidSplinePointCount);
+      int rightCornerPointIndex = UnityExtension.ValidateIndex(i + 1, liquidSplinePointCount);
+
+      Vector2 pointPosition = liquidSpline.GetPosition(i);
+      Vector2 leftCornerPointPosition = liquidSpline.GetPosition(leftCornerPointIndex);
+
+      // Identify top edge points to expand into a wave line
+      if (pointPosition.y &gt; leftCornerPointPosition.y)
+      {
+        LiquidPoint liquidPoint = new LiquidPoint(i, liquidSpline);
+        liquidPoint.rightLiquidPoint = new LiquidPoint(rightCornerPointIndex, liquidSpline);
+        leftCornerLiquidPoint.Add(liquidPoint);
+      }
+    }
+
+    int indexOffSet = 0;
+
+    // Construct wave lines based on detected top corners
+    _liquidLines = new LiquidPoint[leftCornerLiquidPoint.Count][];
+
+    for (int i = 0; i &lt; leftCornerLiquidPoint.Count; i++)
+    {
+      int leftCornerPointIndex = leftCornerLiquidPoint[i].index + indexOffSet;
+      int rightCornerPointIndex = leftCornerLiquidPoint[i].rightLiquidPoint.index + indexOffSet;
+
+      Vector2 leftCornerPointPosition = leftCornerLiquidPoint[i].position;
+      Vector2 rightCornerPointPosition = leftCornerLiquidPoint[i].rightLiquidPoint.position;
+
+      int lineLength = Mathf.RoundToInt(Mathf.Abs(leftCornerPointPosition.x - rightCornerPointPosition.x) + 1);
+
+      LiquidPoint[] liquidPoints = new LiquidPoint[lineLength];
+
+      // Add intermediate spline points between left and right corners
+      indexOffSet += lineLength - 2;
+
+      for (int ii = 0; ii &lt; lineLength - 2; ii++)
+      {
+        liquidSpline.InsertPointAt(rightCornerPointIndex, new Vector3(rightCornerPointPosition.x - ii - 1, rightCornerPointPosition.y, 0));
+      }
+
+      liquidSplinePointCount = liquidSpline.GetPointCount();
+
+      int pointIndex;
+
+      // Initialize wave points
+      for (int ii = 0; ii &lt; lineLength; ii++)
+      {
+        pointIndex = UnityExtension.ValidateIndex(leftCornerPointIndex + ii, liquidSplinePointCount);
+        liquidPoints[ii] = new LiquidPoint(pointIndex, liquidSpline);
+      }
+
+      // Link neighbors for wave simulation
+      for (int ii = 0; ii &lt; lineLength; ii++)
+      {
+        if (ii &gt; 0) liquidPoints[ii].leftLiquidPoint = liquidPoints[ii - 1];
+        if (ii &lt; lineLength - 1) liquidPoints[ii].rightLiquidPoint = liquidPoints[ii + 1];
+      }
+
+      _liquidLines[i] = liquidPoints;
+    }
+
+    // Set tangent mode and height for all spline points
+    for (int i = 0; i &lt; liquidSpline.GetPointCount(); i++)
+    {
+      liquidSpline.SetTangentMode(i, ShapeTangentMode.Continuous);
+      liquidSpline.SetHeight(i, .5f);
+    }
+  }
+
+  /// &lt;summary&gt;
+  /// Updates wave physics simulation every physics frame.
+  /// &lt;/summary&gt;
+  void FixedUpdate()
+  {
+    for (int i = 0; i &lt; _liquidLines.Length; i++)
+    {
+      for (int ii = 0; ii &lt; _liquidLines[i].Length; ii++)
+      {
+        _liquidLines[i][ii].WaveSpringUpdate(_springSwiftness, _maximumExtension);
+      }
+    }
+  }
+
+  /// &lt;summary&gt;
+  /// Moves the liquid up or down depending on toggle state.
+  /// &lt;/summary&gt;
+  /// &lt;param name="activate"&gt;Whether to raise or lower the liquid.&lt;/param&gt;
+  protected void ActivateAddOn(bool activate)
+  {
+    // Instant movement on scene start
+    if (Time.timeSinceLevelLoad == 0)
+    {
+      if (activate) transform.position = _basePosition + Vector2.up * _positionDisplaceOnActivate;
+      else transform.position = _basePosition;
+    }
+    else
+    {
+      // Animated movement if not on scene start
+      if (_animation != null) StopCoroutine(_animation);
+      if (activate)
+        _animation = StartCoroutine(AnimationLibrary.AnimationTranslate(transform.position, new Vector2(transform.position.x, transform.position.y + _positionDisplaceOnActivate), new Timer(_timeForLiquidGoingUp), transform));
+      else
+        _animation = StartCoroutine(AnimationLibrary.AnimationTranslate(transform.position, new Vector2(transform.position.x, transform.position.y - _positionDisplaceOnActivate), new Timer(_timeForLiquidGoingDown), transform));
+    }
+  }
+
+  /// &lt;summary&gt;
+  /// Handles splash, slowdown, gravity adjustment and wave creation when an object enters the liquid.
+  /// &lt;/summary&gt;
+  /// &lt;param name="touched"&gt;The collider entering the liquid.&lt;/param&gt;
+  protected virtual void OnTouchEnterAddOn(Collider2D touched)
+  {
+    Rigidbody2D rb2D;
+
+    // Protagonist enter
+    if (GameManager.instance.setting.protagonist.IsInLayerMask(touched.gameObject.layer))
+    {
+      ProtagonistActor protagonist = touched.transform.parent.GetComponent&lt;ProtagonistActor&gt;();
+      rb2D = protagonist.rb2D;
+
+      // Ignore if already inside
+      if (protagonist.isInLiquid) return;
+
+      // Apply liquid effects
+      protagonist.speedRemoveInLiquid = _speedRemoveInLiquid;
+      protagonist.isInLiquid = true;
+      protagonist.liquidGravity = _liquidGravity;
+      protagonist.protagonistAnimator.Move();
+
+      // Trigger splash or gentle floating sound
+      if (protagonist.rb2D.velocity.y &gt; 5 || protagonist.rb2D.velocity.magnitude &gt; 14)
+      {
+        protagonist.sFXManager.PlaySound("Enter Water");
+        TriggerSplashParticles(protagonist.vFXManager, 80 * Mathf.Atan(.1f * Mathf.Abs(rb2D.velocity.y) - 3) + 110);
+      }
+      else protagonist.sFXManager.PlaySound("Floating Water");
+
+      // Slowdown on entry only if he is not using a spell
+      if (!protagonist.wand.isUsingSpell)
+      {
+        RemoveVelocityWhenEnter(rb2D);
+      }
+    }
+
+    // Decoration enter
+    else if (GameManager.instance.setting.decoration.IsInLayerMask(touched.gameObject.layer))
+    {
+      Decoration decoration = touched.GetComponent&lt;Decoration&gt;();
+      decoration.isInLiquid = true;
+      decoration.liquidGravity = _liquidGravity;
+      rb2D = decoration.rb2D;
+
+      decoration.EnterLiquid();
+
+      TriggerSplashParticles(decoration.vFXManager, 60 * Mathf.Atan(.1f * Mathf.Abs(rb2D.velocity.y) - 3) + 80);
+
+      RemoveVelocityWhenEnter(rb2D);
+    }
+
+    // Heavy object enter
+    else
+    {
+      Heavy heavy = touched.GetComponent&lt;Heavy&gt;();
+      heavy.isInLiquid = true;
+      heavy.liquidGravity = _liquidGravity;
+      rb2D = heavy.rb2D;
+
+      heavy.EnterLiquid();
+
+      TriggerSplashParticles(heavy.vFXManager, 60 * Mathf.Atan(.1f * Mathf.Abs(rb2D.velocity.y) - 3) + 80);
+
+      RemoveVelocityWhenEnter(rb2D);
+    }
+
+    CreateWave(touched.transform.position, rb2D.velocity.y);
+  }
+
+  /// &lt;summary&gt;
+  /// Handles exit effects such as splash, speed adjustment and wave creation
+  /// &lt;/summary&gt;
+  /// &lt;param name="touched"&gt;Object exiting the liquid.&lt;/param&gt;
+  protected virtual void OnTouchExitAddOn(Collider2D touched)
+  {
+    Rigidbody2D rb2D;
+    if (GameManager.instance.setting.protagonist.IsInLayerMask(touched.gameObject.layer))
+    {
+      ProtagonistActor protagonist = touched.transform.parent.GetComponent&lt;ProtagonistActor&gt;();
+      rb2D = protagonist.rb2D;
+
+      // Make sure the exit is real (not still inside bounds)
+      if (_polygonCollider2D.bounds.Contains(protagonist.body.transform.position)) return;
+
+      protagonist.isInLiquid = false;
+      protagonist.protagonistAnimator.VelocityAnimation();
+
+      // Splash effect based on exit speed
+      if (protagonist.rb2D.velocity.y &gt; 5 || protagonist.rb2D.velocity.magnitude &gt; 14)
+      {
+        protagonist.sFXManager.PlaySound("Exit Water");
+
+        TriggerSplashParticles(protagonist.vFXManager, 60 * Mathf.Atan(.1f * Mathf.Abs(rb2D.velocity.y) - 3) + 80);
+      }
+
+      // Natural exit velocity cap so it doesn't jump around on the surface and stay close to still
+      if (!protagonist.isJumping && !protagonist.wand.isUsingSpell && protagonist.rb2D.velocity.y &lt; 8)
+      {
+        rb2D.velocity = new Vector2(rb2D.velocity.x, Matho.Clamp(rb2D.velocity.y, 0, _velocityCapWhenNaturalExit));
+      }
+    }
+    else if (GameManager.instance.setting.decoration.IsInLayerMask(touched.gameObject.layer))
+    {
+      Decoration decoration = touched.GetComponent&lt;Decoration&gt;();
+      decoration.isInLiquid = false;
+      rb2D = decoration.rb2D;
+      decoration.ExitLiquid();
+
+      TriggerSplashParticles(decoration.vFXManager, 60 * Mathf.Atan(.1f * Mathf.Abs(rb2D.velocity.y) - 3) + 80);
+    }
+    else
+    {
+      rb2D = touched.GetComponent&lt;Rigidbody2D&gt;();
+    }
+
+    // Wave and upward push to make it look prettier
+    CreateWave(touched.transform.position, rb2D.velocity.y);
+    rb2D.velocity = new Vector2(rb2D.velocity.x, rb2D.velocity.y + 4f);
+  }
+
+  /// &lt;summary&gt;
+  /// Creates a vertical wave disturbance near the given world position.
+  /// &lt;/summary&gt;
+  /// &lt;param name="position"&gt;Position where the disturbance occurs.&lt;/param&gt;
+  /// &lt;param name="speed"&gt;Speed of the entering/exiting object.&lt;/param&gt;
+  protected void CreateWave(Vector2 position, float speed)
+  {
+    for (int i = 0; i &lt; _liquidLines.Length; i++)
+    {
+      for (int ii = 0; ii &lt; _liquidLines[i].Length; ii++)
+      {
+        if (Mathf.Abs(transform.position.x + _liquidLines[i][ii].position.x - position.x) &lt; .6f)
+        {
+          _liquidLines[i][ii].velocity += speed * .03f;
+        }
+      }
+    }
+  }
+
+  /// &lt;summary&gt;
+  /// Applies splash particle colors and emission rate.
+  /// &lt;/summary&gt;
+  /// &lt;param name="vfxManager"&gt;The VFX manager containing particles.&lt;/param&gt;
+  /// &lt;param name="velocity"&gt;Vertical speed influencing splash intensity.&lt;/param&gt;
+  void TriggerSplashParticles(VFXManager vfxManager, float rateOverTime)
+  {
+    if (vfxManager == null) return;
+
+    ParticleSystem waterSplash = vfxManager.particles["WaterSplashParticles"];
+
+    foreach (ParticleSystem particleChild in waterSplash.GetComponentsInChildren&lt;ParticleSystem&gt;())
+    {
+      ParticleSystem.MainModule main = particleChild.main;
+      main.startColor = _particleColor;
+
+      ParticleSystem.EmissionModule emission = particleChild.emission;
+      emission.rateOverTime = rateOverTime;
+    }
+
+    vfxManager.StartParticle(waterSplash);
+  }
+
+  /// &lt;summary&gt;
+  /// Reduces the velocity of an object when it enters the liquid,
+  /// applying different multipliers to the horizontal and vertical components.
+  /// &lt;/summary&gt;
+  /// &lt;param name="rb2D"&gt;The Rigidbody2D of the object entering the liquid.&lt;/param&gt;
+  void RemoveVelocityWhenEnter(Rigidbody2D rb2D)
+  {
+    rb2D.velocity = new Vector2(
+        rb2D.velocity.x * (_velocityRemovedWhenEnter - .1f),
+        rb2D.velocity.y * (_velocityRemovedWhenEnter + .1f)
+    );
+  }
+}</code>
+</pre>
+
+<h4 id="Tools-TheMeltyWay">Tools</h4>
+
+<div class="image-video-container">
+  <video width="500" loop muted playsinline preload="none" data-src="Images/Contents/TheMeltyWay/Tools-editor.mp4"
+    src="" type="video/mp4">
     Your browser does not support the video tag.
   </video>
 </div>
 
 <ul>
-  <li></li>
+  <li>Toggle tools to link every toggleable element</li>
+  <li>Touch tools to have better control on collision</li>
+  <li>Usage of Unity tilemap</li>
+  <li>Usage of Autotiling to facilate placement</li>
+  <li>Automasker for level for the splatters</li>
+  <li>Usage of sprite atlas for performance</li>
+  <li>Homemade sfx tool</li>
+  <li>Save and load system</li>
+  <li>Usage of profiler to optimize the game</li>
+  <li>Easy modification of value for the interactable object</li>
+  <li>Usage of cinemachine for smooth, confined camera</li>
+  <li>Usage of the new input system</li>
 </ul>
 
-<p></p>
-<pre><code class="language-csharp">
-  
-</code>
-</pre>
 
-Montrer le code pour la sauvegarde
-<p></p>
-<pre><code class="language-csharp">
-  
-</code>
-</pre>
+<h5>Toggle</h5>
 
-Montrer le code pour les touches du tutoriel et le remapping
-Tutorial system with books showing available moves and input buttons, dynamically switching based on control method
-<p></p>
+<div class="image-video-container">
+  <video width="500" loop muted playsinline preload="none" data-src="Images/Contents/TheMeltyWay/Toggle.mp4" src=""
+    type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+</div>
 
 <pre><code class="language-csharp">
   
 </code>
 </pre>
 
-Montrer le code pour les splatters sur les murs
+<h5>Touch</h5>
 
-<pre><code class="language-csharp">
-  
-</code>
+
+<h5>Save and load</h5>
+
+<pre><code class="language-csharp">/// &lt;summary&gt;
+/// Save progress of the game
+/// &lt;/summary&gt;
+/// &lt;param name="levelManager"&gt;The level manager to use for saving.&lt;/param&gt;
+public static void SaveProgress(LevelManager levelManager)
+{
+  LevelData data = new LevelData(GameManager.instance.protagonistColor,
+                                levelManager.dyeCollected,
+                                levelManager.level,
+                                levelManager.floor,
+                                levelManager.highestFloor,
+                                levelManager.nextFloorUnlocked,
+                                levelManager.levelAnimationPlayed);
+
+  Save(data);
+}
+
+/// &lt;summary&gt;
+/// Reset the game progress
+/// &lt;/summary&gt;
+/// &lt;param name="levelManager"&gt;The level manager to use for reseting progress.&lt;/param&gt;
+public static void ResetProgress(LevelManager levelManager)
+{
+  LevelData data = new LevelData(levelManager.basicSlimeColor,
+                                new bool[levelManager.dyeAmount]);
+
+  Save(data);
+}
+
+/// &lt;summary&gt;
+/// Save a level data inside the computer
+/// &lt;/summary&gt;
+/// &lt;param name="data"&gt;The level data to save.&lt;/param&gt;
+public static void Save(LevelData data)
+{
+  BinaryFormatter formatter = new BinaryFormatter();
+  string path = Application.persistentDataPath + "/level.tmw";
+  // Open the file to start saving the data
+  FileStream stream = new FileStream(path, FileMode.Create);
+
+  formatter.Serialize(stream, data);
+  stream.Close();
+}
+
+/// &lt;summary&gt;
+/// Load the progress saved inside the computer, if it doesn't exist make a new save.
+/// &lt;/summary&gt;
+/// &lt;param name="levelManager"&gt;The level manager to use in case there is no data.&lt;/param&gt;
+/// &lt;returns&gt;The level data saved&lt;/returns&gt;
+public static LevelData LoadProgress(LevelManager levelManager)
+{
+  string path = Application.persistentDataPath + "/level.tmw";
+  if (File.Exists(path))
+  {
+    BinaryFormatter formatter = new BinaryFormatter();
+    // Open the file to start saving the data
+    FileStream stream = new FileStream(path, FileMode.Open);
+
+    // Get the info and make it a usable level data
+    LevelData data = formatter.Deserialize(stream) as LevelData;
+    stream.Close();
+
+    return data;
+  }
+  // Nothing found, we create a new save
+  else return new LevelData(levelManager.basicSlimeColor, new bool[levelManager.dyeAmount]);
+}
+
+[System.Serializable]
+public class LevelData
+{
+  int _level; // The level the player left the game
+  public int level { get => _level; }
+  int _floor; // The floor the player left the game
+  public int floor { get => _floor; }
+  int _highestFloor; // The highest floor the player achieved
+  public int highestFloor { get => _highestFloor; }
+  bool _nextFloorUnlocked; // Did the animation for the next floor have been played
+  public bool nextFloorUnlocked { get => _nextFloorUnlocked; }
+  // At which level the player have seen animation so we don't play it twice
+  int _levelAnimationPlayed;
+  public int levelAnimationPlayed { get => _levelAnimationPlayed; }
+  // Which dye have been collected
+  bool[] _dyeCollected;
+  public bool[] dyeCollected { get => _dyeCollected; }
+  // Saving the dye RGB of the current color the player is wearing
+  float _dyeRed;
+  public float dyeRed { get => _dyeRed; }
+  float _dyeGreen;
+  public float dyeGreen { get => _dyeGreen; }
+  float _dyeBlue;
+  public float dyeBlue { get => _dyeBlue; }
+
+  public LevelData(Color dyeColor, 
+                  bool[] dyeCollected,
+                  int level = -1, 
+                  int floor = -1, 
+                  int highestFloor = 0, 
+                  bool nextFloorUnlocked = false, 
+                  int levelAnimationPlayed = 0)
+  {
+    _level = level;
+    _floor = floor;
+    _highestFloor = highestFloor;
+    _nextFloorUnlocked = nextFloorUnlocked;
+    _levelAnimationPlayed = levelAnimationPlayed;
+    _dyeRed = dyeColor.r;
+    _dyeGreen = dyeColor.g;
+    _dyeBlue = dyeColor.b;
+    _dyeCollected = dyeCollected;
+    // Make sure the player always have the basic color unlocked
+    _dyeCollected[0] = true;
+  }
+}</code>
 </pre>
-Montrer l'option pour masquer facilement
 
-<pre><code class="language-csharp">
-  
-</code>
-</pre>
+<h5>Level mask</h5>
 
-Montrer le code pour les transitions
-
-<pre><code class="language-csharp">
-  
-</code>
-</pre>
+<div class="image-video-container">
+  <video width="500" loop muted playsinline preload="none" data-src="Images/Contents/TheMeltyWay/Masking.mp4" src=""
+    type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+</div>
 
 <h4 id="Polish-TheMeltyWay">Polish</h4>
 
 <div class="image-video-container">
-  <video width="1000" autoplay loop muted playsinline preload="none"
-    data-src="Images/Contents/TheMeltyWay/Polish.mp4" src="" type="video/mp4">
+  <video width="500" loop muted playsinline preload="none" data-src="Images/Contents/TheMeltyWay/Polish.mp4" src=""
+    type="video/mp4">
     Your browser does not support the video tag.
   </video>
 </div>
@@ -199,6 +832,7 @@ Montrer le code pour les transitions
   <li>Bug fixing</li>
   <li>End of level and epic achivement animation</li>
   <li>Build on every plateforme</li>
+  <li>Splatters on wall and object</li>
   <li>Steam achivement</li>
   <li>Title screen animation</li>
   <li>Decorative interactable element</li>
@@ -209,8 +843,36 @@ Montrer le code pour les transitions
   <li>SFX</li>
   <li>Random pitch and fade in, fade out for the sounds</li>
   <li>Music that change based on the levels and blend simlessly</li>
+  <li>Custom cursor</li>
 </ul>
+
+<h5>Settings</h5>
 
 <div class="image-video-container">
   <img src="Images/Contents/TheMeltyWay/Settings.jpg" loading="lazy">
+</div>
+
+<h5>Transition</h5>
+
+<div class="image-video-container">
+  <video width="500" loop muted playsinline preload="none" data-src="Images/Contents/TheMeltyWay/Portal-transition.mp4"
+    src="" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+  <video width="500" loop muted playsinline preload="none" data-src="Images/Contents/TheMeltyWay/Death-transition.mp4"
+    src="" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+<h5>Dye</h5>
+
+<div class="image-video-container">
+  <img src="Images/Contents/TheMeltyWay/Dye.jpg" loading="lazy">
+</div>
+
+<h5>Level selection</h5>
+
+<div class="image-video-container">
+  <img src="Images/Contents/TheMeltyWay/Level-selection.jpg" loading="lazy">
 </div>

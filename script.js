@@ -24,7 +24,7 @@ gamesThumbnail.forEach(gameThumbnail => {
     gameContentSpace.style.height = 0;
 
     if (game.classList.contains('open')) {
-      gameContent = game.querySelector('.game-content');
+      gameContent = game.querySelector('.game-container');
 
       animationId = requestAnimationFrame(() => syncHeight(gameContentSpace, gameContent));
 
@@ -129,19 +129,32 @@ function getChildPerRow() {
   }
 }
 
-const videos = document.querySelectorAll('.scroll-video');
+const videos = document.querySelectorAll('video');
+var videosToDisable = [];
 
 const observer = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
     const video = entry.target;
-    if (entry.isIntersecting) {
+    const hasSrc = video.currentSrc && video.currentSrc !== "";
+    if (entry.isIntersecting && hasSrc) {
+      video.currentTime = 0;
       video.play();
+      videosToDisable.push(video);
     } else {
       video.pause();
+      videosToDisable = videosToDisable.filter(v => v !== video);
     }
   });
 }, {
-  threshold: 0.5 // play when 50% of the video is visible
+  threshold: 0
 });
 
 videos.forEach(video => observer.observe(video));
+
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) {
+    videosToDisable.forEach(v => { if (v.currentSrc && v.currentSrc !== "") v.pause(); });
+  } else {
+    videosToDisable.forEach(v => { if (v.currentSrc && v.currentSrc !== "") v.play(); });
+  }
+});

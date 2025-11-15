@@ -341,7 +341,7 @@ function addGame(parent, game) {
 
   contentHeaderHtml += '</div>';
 
-  contentHtml = '<div class="game-content">' + contentHeaderHtml + '<div class="game-content-main" id="' + trimmerName + 'content"></div></div>';
+  contentHtml = '<div class="game-content"><div class="game-container">' + contentHeaderHtml + '<div class="game-content-main" id="' + trimmerName + 'Content"></div></div></div>';
 
   // Add it to the page
 
@@ -349,7 +349,7 @@ function addGame(parent, game) {
 
   contentDiv.innerHTML += gameHtml;
 
-  loadHTML("Html/" + trimmerName + ".html", trimmerName + "content");
+  loadHTML("Html/" + trimmerName + ".html", trimmerName + "Content");
 }
 
 function loadHTML(fileName, targetId) {
