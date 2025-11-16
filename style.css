@@ -32,9 +32,11 @@ a:hover {
   color: #333331;
 }
 
-.no-bullets {
+ul {
+  text-align: center;
+  margin: 20px 0 0 0;
+  padding: 0;
   list-style: none;
-  padding-left: 20px;
 }
 
 .background-video {
@@ -518,16 +520,15 @@ a:hover {
 }
 
 h3 {
+  text-align: center;
+  margin-top: 60px;
   font-size: 40px;
 }
 
 h4 {
-  margin-top: 40px;
-  font-size: 30px;
-}
-
-h5 {
-  font-size: 20px;
+  text-align: center;
+  margin-top: 30px;
+  font-size: 25px;
 }
 
 .image-video-container {
@@ -552,11 +553,39 @@ code {
 }
 
 pre {
+  position: relative;
   background-color: #282a36;
   border-radius: 8px;
   padding: 20px;
+  margin: 0 !important;
   overflow-x: auto;
-  max-height: 1000px;
+  max-height: 400px;
+  transition: max-height 0.5s ease;
+  overflow: hidden !important;
+}
+
+pre::after {
+  content: '';
+  rotate: calc(180deg);
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 6px solid #bebebe;
+  transition: rotate 0.5s ease;
+}
+
+pre.open-pre {
+  max-height: 20000px;
+  overflow: scroll !important;
+}
+
+pre.open-pre::after {
+  content: '';
+  rotate: calc(0deg);
 }
 
 code[class*="language-"] {

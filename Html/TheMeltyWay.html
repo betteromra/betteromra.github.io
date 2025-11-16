@@ -1,17 +1,34 @@
-<h3>Complete 2D puzzle platformers</h3>
+<p>The Melty Way is a 2D puzzle-platformer where you play as a soft body slime navigating <strong>60
+    handcrafted levels</strong> filled with size based challenges, hazards, liquids and dynamic environments. The game
+  blends <strong>responsive precision platforming</strong> with light puzzle solving, encouraging players to
+  master movement, experiment with size shifting abilities and adapt to new obstacles.</p>
 
-<p>A platformer spanning 60 levels with an extensive variety of mechanics,
-  interactive environments and player feedback systems. </p>
+<p>You progress through <strong>themed floors of a mysterious wizard tower</strong>, each introducing new mechanics,
+  from lasers and
+  cannons to sticky tiles, conveyors and <strong>reactive liquids</strong> that change how your slime moves. The story
+  is light,
+  focusing on exploration and discovery, but the atmosphere, color system and NPC moments add charm and personality.</p>
 
-<ul class="no-bullets">
+<p>The core gameplay loop is : <strong>learn a mechanic → practice safely → master it in
+    challenging rooms → advance to the next floor</strong>. It's a die and retry experience. <strong>Collectible
+    dyes</strong> let players
+  customize the slime and the save/load system ensures long-term progression.</p>
+
+<p>The Melty Way is built for players who enjoy tight controls, clever level design and satisfying game
+  feel, similar to
+  fans of <strong>Celeste, Super Meat Boy and Super Mario Bros. Wonder</strong>. With <strong>full controller
+    support</strong>, polished player feedback
+  and an evolving set of mechanics, the game aims to feel fluid, expressive and rewarding to master.</p>
+
+<ul>
   <li><a href="#Player-TheMeltyWay">Highly advanced player logic for the platformer.</a></li>
-  <li><a href="#Tools-TheMeltyWay">Multiple tools to help developpment.</a></li>
+  <li><a href="#Tools-TheMeltyWay">Multiple tools to help development.</a></li>
   <li><a href="#Hazards-TheMeltyWay">Hazards to add fun and challenge.</a></li>
   <li><a href="#Liquids-TheMeltyWay">5 Liquids that are swimable with the dash ability.</a></li>
   <li><a href="#Polish-TheMeltyWay">Polish to make the game more enjoyable.</a></li>
 </ul>
 
-<h4 id="Player-TheMeltyWay">Player</h4>
+<h3 id="Player-TheMeltyWay">Player</h3>
 
 <div class="image-video-container">
   <video width="500" loop muted playsinline preload="none" data-src="Images/Contents/TheMeltyWay/Player-movement.mp4"
@@ -22,33 +39,844 @@
 
 <ul>
   <li>Classic platformer mechanics with movement and jumping</li>
-  <li>Slime changes size dynamically based on health</li>
-  <li>Slime size inflence max speed, acceleration, jump height and resistance</li>
+  <li>Slime dynamically changes size based on health</li>
+  <li>Slime size influences max speed, acceleration, jump height and resistance</li>
   <li>Dashing ability to enhance mobility</li>
   <li>Wall jumping</li>
-  <li>Soft-body physics with the slime's body jiggling naturally during walking, running, jumping and dashing</li>
-  <li>Coyote time for forgiving jumps</li>
+  <li>Soft body physics with natural jiggle during walking, running, jumping and dashing</li>
+  <li>Coyote time for more forgiving jumps</li>
   <li>Jump buffering for smoother controls</li>
-  <li>Input override when changing direction for responsive movement</li>
+  <li>Input override when changing direction for more responsive movement</li>
   <li>Increased gravity when falling for better control</li>
-  <li>Slime size change indicator flashes to alert the player</li>
+  <li>Soft body animation</li>
+  <li>Facial expressions that change based on the situation</li>
+  <li>Slime size change indicator that flashes to alert the player</li>
   <li>Audio cue when the slime is low on health</li>
-  <li>Pixel-perfect camera pixelation with dynamic positioning while maintaining consistent pixelation</li>
+  <li>Pixel perfect camera pixelation with dynamic positioning while maintaining consistent pixelation</li>
   <li>Full controller support</li>
-  <li>Full remapping support</li>
-  <li>Shake effects and controller rumble for key moments, enhancing immersion</li>
+  <li>Full control remapping support</li>
+  <li>Screen shake and controller rumble during key moments to enhance immersion</li>
   <li>Complete tutorial</li>
 </ul>
 
-<h5>Soft-body</h5>
-<pre><code class="language-csharp">
-  
-</code>
+<h4>Platforming</h4>
+
+<div class="image-video-container">
+  <video width="500" loop muted playsinline preload="none" data-src="Images/Contents/TheMeltyWay/Platformer-polish.mp4"
+    src="" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+  <video width="500" loop muted playsinline preload="none" data-src="Images/Contents/TheMeltyWay/Size-platforming.mp4"
+    src="" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+<pre><code class="language-csharp">public abstract class Actor : MonoBehaviour
+{
+
+  [...]
+
+  /// &lt;summary&gt;
+  /// Updates the internal state determining whether the actor is allowed to jump.
+  /// Considers ground buffer time, wall jump conditions, and sticky-object restrictions.
+  /// &lt;/summary&gt;
+  protected void RefreshCanJump()
+  {
+    bool hasExitRightWall = _hasExitWall.vector2 == Vector2.right || _hasExitWall.vector2 == Vector2.zero;
+    bool hasExitLefttWall = _hasExitWall.vector2 == Vector2.left || _hasExitWall.vector2 == Vector2.zero;
+
+    // Can jump when:
+    // - Ground buffer is active (Allow ghost jump)
+    // - OR player is on a wall AND (wall reset is over OR wall exit direction is valid)
+    // - AND player is not stuck to a sticky object
+    _canJump = (!_timerOnGround.IsOver() || (_isOnWall && (_wallJumpReset.IsOver() || (_leftWall && hasExitRightWall) || (_rightWall && hasExitLefttWall)))) && _stickyObj == null;
+  }
+
+  /// &lt;summary&gt;
+  /// Executes the beginning of a jump, including ground jumps, wall jumps,
+  /// movement boosts and interaction with liquids or conveyors.
+  /// &lt;/summary&gt;
+  protected void JumpStart()
+  {
+    RefreshCanJump();
+    if (!_canJump)
+    {
+      // animate when trying to jump out sticky
+      if (_stickyObj != null) _stickyObj.TryToJumpOut();
+      JumpCancel();
+      return;
+    }
+
+    if (_transport != null) _transport.springJoint.enabled = false;
+
+    if (!_isOnGround)
+    {
+      // Wall jump
+
+      bool hasExitRightWall = _hasExitWall.vector2 == Vector2.right || _hasExitWall.vector2 == Vector2.zero;
+      bool hasExitLefttWall = _hasExitWall.vector2 == Vector2.left || _hasExitWall.vector2 == Vector2.zero;
+
+      if (_leftWall && (hasExitRightWall || _wallJumpReset.IsOver()))
+      {
+        // Wall jump from left wall
+        _hasExitWall.vector2 = Vector2.left;
+
+        // Stop opposite-direction horizontal velocity before pushing off
+        if (Mathf.Sign(_rb2D.velocity.x) == -1) _rb2D.velocity = new Vector2(0, _rb2D.velocity.y);
+
+        // Push away from wall to facilitate wall jump
+        _rb2D.velocity += new Vector2(_jumpOfWallForce * _maxStatisticActor.jumpHeight * .1f, 0);
+        _wallJumpReset.Restart();
+      }
+      else if (_rightWall && (hasExitLefttWall || _wallJumpReset.IsOver()))
+      {
+        // Wall jump from right wall
+        _hasExitWall.vector2 = Vector2.right;
+
+        if (Mathf.Sign(_rb2D.velocity.x) == 1) _rb2D.velocity = new Vector2(0, _rb2D.velocity.y);
+
+        _rb2D.velocity += new Vector2(-_jumpOfWallForce * _maxStatisticActor.jumpHeight * .1f, 0);
+        _wallJumpReset.Restart();
+      }
+    }
+    else
+    {
+      // Jump from ground
+
+      if (_isMoving && !_isSlippery)
+      {
+
+        // If moving in same direction as current velocity, make sure to jump at maxSpeed
+        if (Mathf.Sign(_rb2D.velocity.x) == Mathf.Sign(_moveDirection.x))
+        {
+          float maxSpeed = _maxStatisticActor.maxSpeed * _speedMultiplior * _moveDirection.x;
+          if (transport != null)
+          {
+            maxSpeed += _baseVelocity.x;
+          }
+          if (Mathf.Abs(_rb2D.velocity.x) &lt; maxSpeed) _rb2D.velocity = new Vector2(maxSpeed, _rb2D.velocity.y);
+        }
+      }
+    }
+
+    // if in liquid make it jump less high
+    if (_isInLiquid) _rb2D.velocity = new Vector2(_rb2D.velocity.x, _maxStatisticActor.jumpHeight * .5f);
+    else
+    {
+
+      if (conveyorTouching == null) _rb2D.velocity = new Vector2(_rb2D.velocity.x, _maxStatisticActor.jumpHeight);
+      else if (_rb2D.velocity.y * .5f &lt;= _maxStatisticActor.jumpHeight)
+      {
+        // if we are on a conveyor, make sure the jump height is adjusted
+        _rb2D.velocity = new Vector2(_rb2D.velocity.x, _rb2D.velocity.y * .6f + _maxStatisticActor.jumpHeight);
+      }
+    }
+    _rb2D.gravityScale = _normalGravity;
+
+    CalculateIsFalling();
+
+    JumpVFX(true);
+
+    JumpStartAddOn();
+  }
+
+  /// &lt;summary&gt;
+  /// Optional Add on method invoked when jump starts end.
+  /// &lt;/summary&gt;
+  protected virtual void JumpStartAddOn() { }
+
+  /// &lt;summary&gt;
+  /// Performs logic while the jump input is being held.
+  /// Ends jump if falling.
+  /// &lt;/summary&gt;
+  protected void JumpPerform()
+  {
+    if (_isFalling)
+    {
+      JumpCancel();
+      return;
+    }
+    _rb2D.gravityScale = _normalGravity;
+  }
+
+  /// &lt;summary&gt;
+  /// Cancels the jump and applies high gravity for quick fall if not in liquid.
+  /// &lt;/summary&gt;
+  public void JumpCancel()
+  {
+    _isJumping = false;
+    if (!_isInLiquid)
+    {
+      // Make the gravity high when falling to have more control and precision
+      if (transport == null) _rb2D.gravityScale = _highGravity;
+    }
+  }
+  /// &lt;summary&gt;
+  /// Called when movement starts; triggers movement VFX if grounded.
+  /// &lt;/summary&gt;
+  protected void MoveStart()
+  {
+    if (_isOnGround) MoveVFX(true);
+  }
+
+  /// &lt;summary&gt;
+  /// Applies movement logic: acceleration, max speed, slopes, sticky modifiers,
+  /// slippery behavior, and platform velocity.
+  /// &lt;/summary&gt;
+  protected void MovePerform(Direction2 direction)
+  {
+    if (!_wasOnGround && _isOnGround) MoveVFX(true);
+    if (_wasOnGround && !_isOnGround) MoveVFX(false);
+
+    if (_wand.isUsingSpell) return;
+
+    if (!_canMoveLeft && direction.vector2 == Vector2.left) return;
+    if (!_canMoveRight && direction.vector2 == Vector2.right) return;
+
+    float speed = _rb2D.velocity.x;
+    float acceleration;
+    float maxSpeed;
+    float maxSpeedLeft;
+    float maxSpeedRight;
+    Vector2 moveOverSlope = Vector2.zero;
+
+    // If walking slow, apply slope movement when standing on angled surfaces
+
+    if (Matho.IsBetween(_rb2D.velocity.x, -2, 2))
+    {
+      if (_leftGround && direction.vector2 == Vector2.left && Mathf.Abs(_leftGround.normal.y) &lt; .98f)
+      {
+        Vector2 perpandicular = Vector2.Perpendicular(_leftWall.normal);
+        moveOverSlope = new Vector2(perpandicular.x, Mathf.Abs(perpandicular.y)) * 2;
+      }
+      if (_rightGround && direction.vector2 == Vector2.right && Mathf.Abs(_rightGround.normal.y) &lt; .98f)
+      {
+        Vector2 perpandicular = Vector2.Perpendicular(_rightGround.normal);
+        moveOverSlope = new Vector2(-perpandicular.x, Mathf.Abs(perpandicular.y)) * 2;
+      }
+    }
+
+    if (_isOnGround && !_isInLiquid)
+    {
+      maxSpeed = _maxStatisticActor.maxSpeed * _speedMultiplior;
+      // Heavy reduction maxspeed when stuck
+      if (_stickyObj != null) maxSpeed *= .25f;
+      // Slippery surfaces allow high max speeds
+      if (_isSlippery) maxSpeed *= 5f;
+      acceleration = _maxStatisticActor.acceleration * _speedMultiplior;
+    }
+    else
+    {
+      // Air movement reduced
+      maxSpeed = _maxStatisticActor.maxSpeed * .6f;
+      // Reduce maxspeed when stuck
+      if (_isStickySide[3]) maxSpeed *= .6f;
+      acceleration = _maxStatisticActor.acceleration * .3f;
+    }
+
+    maxSpeedLeft = -maxSpeed;
+    maxSpeedRight = maxSpeed;
+
+    if (transport != null)
+    {
+      maxSpeedLeft += _baseVelocity.x;
+      maxSpeedRight += _baseVelocity.x;
+    }
+
+    // Lower acceleration on slippery surfaces
+    if (_isSlippery) acceleration = acceleration * .1f + .1f;
+
+    if (_rb2D.velocity.x &lt; maxSpeedRight && direction.vector2 == Vector2.right)
+    {
+      if (_rb2D.velocity.x &lt; 0)
+      {
+        // Strong boost when switching directions
+        if (_isSlippery) acceleration *= 2;
+        else acceleration *= 5;
+      }
+      speed = _rb2D.velocity.x + direction.x * acceleration;
+    }
+    else if (_rb2D.velocity.x &gt; maxSpeedLeft && direction.vector2 == Vector2.left)
+    {
+      if (_rb2D.velocity.x &gt; 0)
+      {
+        // Strong boost when switching directions
+        if (_isSlippery) acceleration *= 2;
+        else acceleration *= 5;
+      }
+      speed = _rb2D.velocity.x + direction.x * acceleration;
+    }
+    else if (_isOnGround || _isStickySide[3])
+    {
+      speed = Matho.Clamp(_rb2D.velocity.x - (_maxStatisticActor.acceleration * .5f * Mathf.Sign(_rb2D.velocity.x)), 0, 99f * Mathf.Sign(_rb2D.velocity.x));
+    }
+    if (_stickyObj != null) speed = Matho.Clamp(speed, maxSpeed, -maxSpeed);
+
+    _rb2D.velocity = new Vector2(speed, _rb2D.velocity.y) + moveOverSlope;
+  }
+
+  /// &lt;summary&gt;
+  /// Stops movement and disables movement VFX.
+  /// &lt;/summary&gt;
+  protected void MoveCancel()
+  {
+    MoveVFX(false);
+  }
+
+  /// &lt;summary&gt;
+  /// Starts sprinting by increasing speed multiplier.
+  /// &lt;/summary&gt;
+  protected void SprintStart()
+  {
+    _speedMultiplior = 2f;
+    SprintVFX(true);
+  }
+
+  /// &lt;summary&gt;
+  /// Stops sprinting and resets speed multiplier.
+  /// &lt;/summary&gt;
+  protected void SprintCancel()
+  {
+    _speedMultiplior = 1f;
+    SprintVFX(false);
+  }
+
+  [...]
+
+}
+
+public class ControllableActor : Actor
+{
+  // Tracks whether movement input was pressed (used for multiple input)
+  int _moveInputPressed = 0;
+
+  // Jump buffer timer allowing leniency for jump input
+  Timer _jumpBuffer = new Timer(.5f);
+
+  // Used to detect direction changes when the old direction was one way but the player want to go the
+  // other way
+  Direction2 _moveDirectionOld = new Direction2(float.NaN);
+
+  // Whether spell casting is disabled
+  protected bool _spellDisabled = false;
+  public bool spellDisabled
+  {
+    get =&gt; _spellDisabled;
+    set
+    {
+      _spellDisabled = value;
+
+      if (_spellDisabled) DisableSpell();
+      else EnableSpell();
+    }
+  }
+  // Stores input actions for the actor
+  protected ActorInput _input;
+  public ActorInput input { get =&gt; _input; }
+  protected void OnEnable()
+  {
+    _input = new ActorInput();
+
+    EnableControl();
+  }
+  protected virtual void OnDisable()
+  {
+    DisableControl();
+  }
+
+  /// &lt;summary&gt;
+  /// On death disables control.
+  /// &lt;/summary&gt;
+  protected override void OnDeathAddOn()
+  {
+    base.OnDeathAddOn();
+
+    DisableControl();
+  }
+
+
+  /// &lt;summary&gt;
+  /// Enables all input actions for controlling the actor.
+  /// &lt;/summary&gt;
+  public virtual void EnableControl()
+  {
+    _input.Controllable.Jump.performed += context =&gt; InputJump(context);
+    _input.Controllable.Jump.canceled += context =&gt; InputJump(context);
+    _input.Controllable.Jump.Enable();
+
+    _input.Controllable.MoveKeyboardMouse.performed += context =&gt; InputMove(context, Control.KeyboardMouse);
+    _input.Controllable.MoveKeyboardMouse.canceled += context =&gt; InputMove(context, Control.KeyboardMouse);
+    _input.Controllable.MoveKeyboardMouse.Enable();
+
+    _input.Controllable.MoveGamepad.performed += context =&gt; InputMove(context, Control.Gamepad);
+    _input.Controllable.MoveGamepad.canceled += context =&gt; InputMove(context, Control.Gamepad);
+    _input.Controllable.MoveGamepad.Enable();
+
+    _input.Controllable.Sprint.performed += context =&gt; InputSprint(context);
+    _input.Controllable.Sprint.canceled += context =&gt; InputSprint(context);
+    _input.Controllable.Sprint.Enable();
+
+    if (!_spellDisabled) EnableSpell();
+
+    _input.Controllable.SpellDirectionKeyboardMouse.Enable();
+    _input.Controllable.SpellDirectionGamepad.Enable();
+  }
+
+  /// &lt;summary&gt;
+  /// Disables all control input actions.
+  /// &lt;/summary&gt;
+  public virtual void DisableControl()
+  {
+    _input.Controllable.Jump.performed -= context =&gt; InputJump(context);
+    _input.Controllable.Jump.canceled -= context =&gt; InputJump(context);
+    _input.Controllable.Jump.Disable();
+
+    _input.Controllable.MoveKeyboardMouse.performed -= context =&gt; InputMove(context, Control.KeyboardMouse);
+    _input.Controllable.MoveKeyboardMouse.canceled -= context =&gt; InputMove(context, Control.KeyboardMouse);
+    _input.Controllable.MoveKeyboardMouse.Disable();
+
+    _input.Controllable.MoveGamepad.performed -= context =&gt; InputMove(context, Control.Gamepad);
+    _input.Controllable.MoveGamepad.canceled -= context =&gt; InputMove(context, Control.Gamepad);
+    _input.Controllable.MoveGamepad.Disable();
+
+    _input.Controllable.Sprint.performed -= context =&gt; InputSprint(context);
+    _input.Controllable.Sprint.canceled -= context =&gt; InputSprint(context);
+    _input.Controllable.Sprint.Disable();
+
+    DisableSpell();
+
+    _input.Controllable.SpellDirectionKeyboardMouse.Disable();
+    _input.Controllable.SpellDirectionGamepad.Disable();
+  }
+
+  /// &lt;summary&gt;
+  /// Enables spell-casting inputs.
+  /// &lt;/summary&gt;
+  public void EnableSpell()
+  {
+    _input.Controllable.SpellKeyboardMouse.performed += context =&gt; InputSpell(context, Control.KeyboardMouse);
+    _input.Controllable.SpellKeyboardMouse.canceled += context =&gt; InputSpell(context, Control.KeyboardMouse);
+    _input.Controllable.SpellKeyboardMouse.Enable();
+
+    _input.Controllable.SpellGamepad.performed += context =&gt; InputSpell(context, Control.Gamepad);
+    _input.Controllable.SpellGamepad.canceled += context =&gt; InputSpell(context, Control.Gamepad);
+    _input.Controllable.SpellGamepad.Enable();
+  }
+
+  /// &lt;summary&gt;
+  /// Disables spell-casting inputs.
+  /// &lt;/summary&gt;
+  public void DisableSpell()
+  {
+    _input.Controllable.SpellKeyboardMouse.performed -= context =&gt; InputSpell(context, Control.KeyboardMouse);
+    _input.Controllable.SpellKeyboardMouse.canceled -= context =&gt; InputSpell(context, Control.KeyboardMouse);
+    _input.Controllable.SpellKeyboardMouse.Disable();
+
+    _input.Controllable.SpellGamepad.performed -= context =&gt; InputSpell(context, Control.Gamepad);
+    _input.Controllable.SpellGamepad.canceled -= context =&gt; InputSpell(context, Control.Gamepad);
+    _input.Controllable.SpellGamepad.Disable();
+  }
+
+  /// &lt;summary&gt;
+  /// Called when jump input is pressed or released.
+  /// Handles normal and buffered jumps.
+  /// &lt;/summary&gt;
+  void InputJump(InputAction.CallbackContext context)
+  {
+    GameManager.instance.ChangeControl(context);
+    _isJumping = context.performed;
+
+    if (context.performed) StartCoroutine(InputJumpCoroutine());
+  }
+
+  /// &lt;summary&gt;
+  /// Coroutine that handles buffered jump logic and ongoing jump execution.
+  /// &lt;/summary&gt;
+  IEnumerator InputJumpCoroutine()
+  {
+    RefreshCanJump();
+    if (_canJump) _jumpBuffer.Restart();
+
+    while (!_canJump && !_jumpBuffer.IsOver())
+    {
+      yield return null;
+      RefreshCanJump();
+    }
+
+    _isJumping = true;
+    JumpStart();
+
+    while (_isJumping)
+    {
+      JumpPerform();
+      yield return null;
+    }
+
+    JumpCancel();
+  }
+
+  /// &lt;summary&gt;
+  /// Handles movement input from keyboard/mouse or gamepad.
+  /// &lt;/summary&gt;
+  void InputMove(InputAction.CallbackContext context, Control control)
+  {
+    // Update which control scheme is currently active
+    GameManager.instance.ChangeControl(context);
+
+    if (context.performed)
+    {
+      if (control == Control.KeyboardMouse)
+      {
+        _moveDirection.x = Mathf.RoundToInt(context.ReadValue&lt;float&gt;());
+
+        // Count how many times movement key was pressed (1 or 2, cycles)
+        // Used to detect double-tap for direction flip
+        _moveInputPressed = 1 + _moveInputPressed % 2;
+
+        // If the previous direction was right AND the current is right AND this is the second press then flip direction
+        // This make sure the player always go where he want
+        if (_moveDirectionOld.vector2 == Vector2.right && _moveDirection.vector2 == Vector2.right && _moveInputPressed == 2) _moveDirection.Opposite();
+
+        _moveDirectionOld = new Direction2(_moveDirection);
+      }
+      else _moveDirection.x = Mathf.Round(context.ReadValue&lt;Vector2&gt;().x);
+
+      if (!_isMoving && _moveDirection.x != 0) StartCoroutine(InputMoveCoroutine());
+    }
+    else
+    {
+      _moveDirectionOld.x = 0;
+      _moveInputPressed = 0;
+    }
+
+    if (_moveDirection.x != 0) _isMoving = context.performed;
+    else _isMoving = false;
+  }
+
+  /// &lt;summary&gt;
+  /// Coroutine that handles ongoing movement execution.
+  /// &lt;/summary&gt;
+  IEnumerator InputMoveCoroutine()
+  {
+    _isMoving = true;
+
+    MoveStart();
+
+    // Execute as long as the player is holding the direction
+    while (_isMoving && _moveDirection.x != 0)
+    {
+      MovePerform(_moveDirection);
+      yield return new WaitForFixedUpdate();
+    }
+
+    MoveCancel();
+  }
+
+  /// &lt;summary&gt;
+  /// Handles sprint input being pressed or released.
+  /// &lt;/summary&gt;
+  void InputSprint(InputAction.CallbackContext context)
+  {
+    GameManager.instance.ChangeControl(context);
+    if (context.performed) SprintStart();
+    else SprintCancel();
+
+    _isSprinting = context.performed;
+  }
+
+  /// &lt;summary&gt;
+  /// Handles spell input for keyboard/mouse or gamepad.
+  /// &lt;/summary&gt;
+  void InputSpell(InputAction.CallbackContext context, Control control)
+  {
+    GameManager.instance.ChangeControl(context);
+    _wand.InputSpell(context, control);
+  }
+}
+
+/// &lt;summary&gt;
+/// Indicates which control scheme generated input.
+/// &lt;/summary&gt;
+public enum Control
+{
+  KeyboardMouse,
+  Gamepad
+}</code>
 </pre>
-<h5>Plateformer</h5>
 
+<h4>Soft body</h4>
 
-<h5>Tutorial</h5>
+<div class="image-video-container">
+  <video width="500" loop muted playsinline preload="none" data-src="Images/Contents/TheMeltyWay/Softbody.mp4" src=""
+    type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+  <video width="500" loop muted playsinline preload="none" data-src="Images/Contents/TheMeltyWay/Softbody-editor.mp4"
+    src="" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+<pre><code class="language-csharp">public class SoftBodySprite : MonoBehaviour
+{
+    // Reference to the protagonist to get bone positions.
+    [SerializeField] ProtagonistActor _protagonist;
+
+    // MeshRenderer for the main body mesh.
+    [SerializeField] MeshRenderer _meshRenderer;
+    public MeshRenderer meshRenderer =&gt; _meshRenderer;
+
+    // MeshFilter for the main body mesh.
+    MeshFilter _meshFilter;
+
+    // MeshRenderer for the outline mesh.
+    [SerializeField] MeshRenderer _outlineMeshRenderer;
+    public MeshRenderer outlineMeshRenderer =&gt; _outlineMeshRenderer;
+
+    // MeshFilter for the outline mesh.
+    MeshFilter _outlineMeshFilter;
+
+    // Total number of bones in the protagonist.
+    int _boneAmount;
+
+    void Start()
+    {
+        _boneAmount = _protagonist.bones.Length;
+
+        _meshFilter = GetComponent&lt;MeshFilter&gt;();
+        _outlineMeshFilter = _outlineMeshRenderer.GetComponent&lt;MeshFilter&gt;();
+    }
+    /// &lt;summary&gt;
+    /// Updates the soft body mesh every frame based on current bone positions.
+    /// &lt;/summary&gt;
+    void Update()
+    {
+        Mesh mesh = new Mesh();
+
+        Vector3[] vertices = new Vector3[_boneAmount + 1];
+        Vector2[] uv = new Vector2[_boneAmount + 1];
+        int[] triangles = new int[(_boneAmount + 1) * 3];
+
+        vertices[_boneAmount] = new Vector3(0, 0);
+
+        int trianglesIndex;
+        int nextVerticesIndex;
+        
+        // Loop through bones to set vertices, UVs, and triangle indices
+        for (int i = 0; i &lt; _boneAmount; i++)
+        {
+            Bone bone = _protagonist.bones[i];
+
+            // Vertex position matches bone local position
+            vertices[i] = bone.transform.localPosition;
+            uv[i] = bone.transform.localPosition;
+
+            trianglesIndex = i * 3;
+            nextVerticesIndex = i + 1;
+            if (_boneAmount - 1 == i) nextVerticesIndex = 0;
+
+            triangles[trianglesIndex] = _boneAmount;
+            triangles[trianglesIndex + 1] = i;
+            triangles[trianglesIndex + 2] = nextVerticesIndex;
+        }
+
+        mesh.vertices = vertices;
+        mesh.uv = uv;
+        mesh.triangles = triangles;
+
+        _meshFilter.mesh = mesh;
+        _outlineMeshFilter.mesh = mesh;
+    }
+}
+
+public class Bone : MonoBehaviour
+{
+  // Reference to the protagonist actor.
+  ProtagonistActor _protagonist;
+
+  // Game settings reference.
+  GeneralSetting _setting;
+
+  // Rigidbody of this bone.
+  Rigidbody2D _rb2D;
+
+  // Spring joints connected to this bone.
+  SpringJoint2D[] _springJoint2Ds;
+  public SpringJoint2D[] springJoint2Ds =&gt; _springJoint2Ds;
+
+  // Hinge joint for connecting bones.
+  HingeJoint2D _hingeJoint2D;
+  public HingeJoint2D hingeJoint2D =&gt; _hingeJoint2D;
+
+  // Collider representing this bone.
+  CircleCollider2D _circleCollider2D;
+  public CircleCollider2D circleCollider2D =&gt; _circleCollider2D;
+
+  // Original radius of the circle collider.
+  float _circleColliderRaduis;
+  public float circleColliderRaduis =&gt; _circleColliderRaduis;
+
+  // Starting local position of the bone.
+  Vector2 _startPosition;
+  public Vector2 startPosition =&gt; _startPosition;
+
+  // Starting local rotation of the bone.
+  float _startRotation;
+
+  // Initial distances and anchors for all spring joints.
+  float[] _springJoint2DsInitialDistance;
+  public float[] springJoint2DsInitialDistance =&gt; _springJoint2DsInitialDistance;
+
+  Vector2[] _springJoint2DsInitialAnchor;
+  public Vector2[] springJoint2DsInitialAnchor =&gt; _springJoint2DsInitialAnchor;
+
+  // Original anchor for the hinge joint.
+  Vector2 _hingeJoint2DInitialAnchor;
+  public Vector2 hingeJoint2DInitialAnchor =&gt; _hingeJoint2DInitialAnchor;
+
+  // Direction vector pointing outward from bone rotation.
+  Direction2 _directionOutside;
+
+  // Vector from current position to starting position.
+  Vector2 _distancePositionToStart;
+
+  // Raycast hit info for outer and inner collisions.
+  RaycastHit2D _touchOutside;
+  RaycastHit2D _touchInside;
+
+  public void Awake()
+  {
+    _protagonist = GameManager.instance.protagonist;
+    _setting = GameManager.instance.setting;
+
+    _rb2D = GetComponent&lt;Rigidbody2D&gt;();
+    _circleCollider2D = GetComponent&lt;CircleCollider2D&gt;();
+    _circleColliderRaduis = _circleCollider2D.radius;
+
+    _springJoint2Ds = GetComponents&lt;SpringJoint2D&gt;();
+    _springJoint2DsInitialAnchor = new Vector2[_springJoint2Ds.Length];
+    _springJoint2DsInitialDistance = new float[_springJoint2Ds.Length];
+
+    _hingeJoint2D = GetComponent&lt;HingeJoint2D&gt;();
+    _hingeJoint2DInitialAnchor = _hingeJoint2D.connectedAnchor;
+
+    for (int i = 0; i &lt; _springJoint2Ds.Length; i++)
+    {
+      _springJoint2DsInitialAnchor[i] = _springJoint2Ds[i].connectedAnchor;
+      _springJoint2DsInitialDistance[i] = _springJoint2Ds[i].distance;
+    }
+
+    _startPosition = transform.localPosition;
+    _startRotation = transform.localEulerAngles.z;
+  }
+  void FixedUpdate()
+  {
+    _distancePositionToStart = _startPosition * _protagonist.scaleFromHealthLeft - (Vector2)transform.localPosition;
+
+    _directionOutside = new Direction2(transform.rotation.eulerAngles.z);
+
+    // Raycast if it can hit anything outside
+    _touchOutside = Physics2D.Raycast(transform.position, _directionOutside.vector2, _circleCollider2D.bounds.extents.x * 2f, _setting.groundLayer | _setting.damager);
+    // Raycast if it can hit anything inside the soft body
+    _touchInside = Physics2D.Raycast(_protagonist.body.transform.position, transform.localPosition.normalized, transform.localPosition.magnitude - circleCollider2D.radius, _setting.groundLayer);
+
+    if (!_protagonist.brainDead) Splash();
+
+    AddBoneVelocity();
+
+    // we reposition if there is a wall inside
+    if (_touchInside)
+    {
+      transform.position = _touchInside.point - (Vector2)transform.localPosition.normalized * circleCollider2D.radius;
+    }
+
+    transform.localEulerAngles = new Vector3(transform.localEulerAngles.x, transform.localEulerAngles.y, _startRotation);
+  }
+
+  /// &lt;summary&gt;
+  /// Applies velocity to keep bone close to its original position.
+  /// Adds extra force when protagonist is on ground or walls.
+  /// &lt;/summary&gt;
+  void AddBoneVelocity()
+  {
+    // Calculate normalized directions for comparison
+    Vector2 currentDir = transform.localPosition.normalized;
+    Vector2 targetDir = (_startPosition * _protagonist.scaleFromHealthLeft).normalized;
+
+    if (Vector2.Dot(currentDir, targetDir.normalized) &lt; .6f || transform.localPosition.magnitude &lt; .4f * _protagonist.scaleFromHealthLeft)
+    {
+      // If the bone is too misaligned or too close to the center, apply a stronger corrective force
+
+      _rb2D.velocity = _rb2D.velocity * .3f + _distancePositionToStart.normalized * _rb2D.velocity.magnitude * 1.3f;
+    }
+    else
+    {
+      // If the bone is in a normal range, apply environmental effects
+
+      // Apply downward pull if the protagonist is on the ground
+      if (_protagonist.isOnGround) _rb2D.velocity = _rb2D.velocity + Vector2.down * _protagonist.scaleFromHealthLeft;
+      else if (_protagonist.isOnWall)
+      {
+        // Apply lateral push if the protagonist is on a wall
+        if (_protagonist.isOnLeftWall) _rb2D.velocity = _rb2D.velocity + Vector2.left * 2 * _protagonist.scaleFromHealthLeft;
+        else _rb2D.velocity = _rb2D.velocity + Vector2.right * 2 * _protagonist.scaleFromHealthLeft; // is on right wall
+      }
+
+      // Add corrective force toward start position
+      _rb2D.velocity = _rb2D.velocity + _distancePositionToStart * 3;
+    }
+  }
+
+  /// &lt;summary&gt;
+  /// Creates a splatter effect when bone touches surfaces.
+  /// &lt;/summary&gt;
+  void Splash()
+  {
+    if (!_touchOutside || _protagonist.isInLiquid) return;
+
+    Decoration decoration = _touchOutside.transform.GetComponent&lt;Decoration&gt;();
+    Heavy heavy = _touchOutside.transform.GetComponent&lt;Heavy&gt;();
+
+    if (decoration != null || heavy != null) return;
+
+    // Avoid duplicate splatter on same parent
+    Collider2D[] colliders2D = Physics2D.OverlapBoxAll(_touchOutside.point, new Vector2(_setting.splatterAmount, _setting.splatterAmount), 0, _setting.splatterLayer);
+
+    foreach (Collider2D collider2D in colliders2D)
+    {
+      if (collider2D.transform.parent == _touchOutside.transform) return;
+    }
+
+    // Use the next splatter in protagonist's array
+    Splatter splatter = _protagonist.splatters[_protagonist.indexSplatterToUse];
+
+    _protagonist.indexSplatterToUse++;
+    if (_protagonist.indexSplatterToUse &gt;= _protagonist.splatters.Length) _protagonist.indexSplatterToUse = 0;
+
+    splatter.maxSize = _protagonist.scaleFromHealthLeft * 0.2f + 0.15f;
+    splatter.transform.position = _protagonist.body.transform.position;
+    splatter.positionToGo = _touchOutside.point;
+    splatter.color = _protagonist.splatterColor;
+    splatter.transform.parent = _touchOutside.transform;
+
+    // Set sorting layer and order
+    SpriteRenderer touchOutsideSpriteRender = _touchOutside.collider.gameObject.GetComponentInChildren&lt;SpriteRenderer&gt;();
+
+    if (touchOutsideSpriteRender != null)
+    {
+      SpriteRenderer splatterSpriteRender = splatter.gameObject.GetComponentInChildren&lt;SpriteRenderer&gt;();
+
+      splatterSpriteRender.sortingLayerName = touchOutsideSpriteRender.sortingLayerName;
+      splatterSpriteRender.sortingOrder = touchOutsideSpriteRender.sortingOrder + 2;
+    }
+
+    splatter.gameObject.SetActive(true);
+  }
+}</code>
+</pre>
+
+<h4>Tutorial</h4>
 
 <div class="image-video-container">
   <video width="500" loop muted playsinline preload="none" data-src="Images/Contents/TheMeltyWay/Remaping.mp4" src=""
@@ -58,6 +886,10 @@
 </div>
 
 <div class="image-video-container">
+  <video width="500" loop muted playsinline preload="none" data-src="Images/Contents/TheMeltyWay/Tutorial-ghost.mp4"
+    src="" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
   <img src="Images/Contents/TheMeltyWay/Tutorial.jpg" loading="lazy">
 </div>
 
@@ -65,7 +897,7 @@
   <img src="Images/Contents/TheMeltyWay/Controller-remaping.jpg" loading="lazy">
 </div>
 
-<h4 id="Hazards-TheMeltyWay">Hazards</h4>
+<h3 id="Hazards-TheMeltyWay">Hazards</h3>
 
 <div class="image-video-container">
   <video width="500" loop muted playsinline preload="none" data-src="Images/Contents/TheMeltyWay/Hazards-movement.mp4"
@@ -76,29 +908,438 @@
 
 <ul>
   <li>Spikes: Basic damage</li>
-  <li>Saws: Programmed movement patterns</li>
+  <li>Saws: Follow programmed movement patterns</li>
   <li>Lasers: Periodic damage with visual indicators</li>
-  <li>Cannons: Shoot projectiles periodically</li>
+  <li>Cannons: Fire projectiles periodically</li>
   <li>Sticky surfaces: Prevent jumping</li>
-  <li>Slippery surfaces: Glide effect like ice</li>
-  <li>Conveyors: Automatic directional movement</li>
-  <li>Anvils: Moveable if player size allows, can ride and jump off</li>
+  <li>Slippery surfaces: Provide a glide effect similar to ice</li>
+  <li>Conveyors: Apply automatic directional movement</li>
+  <li>Anvils: Movable if the player's size allows. Can be ridden and jumped off</li>
 </ul>
-<p></p>
-<pre><code class="language-csharp">
-  
-</code>
-</pre>
-<pre><code class="language-csharp">
-  
-</code>
-</pre>
-<pre><code class="language-csharp">
-  
-</code>
+
+<h4>Laser</h4>
+
+<div class="image-video-container">
+  <video width="500" loop muted playsinline preload="none" data-src="Images/Contents/TheMeltyWay/Laser.mp4" src=""
+    type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+<pre><code class="language-csharp">public class Laser : Shooter
+{
+
+    // Amount of damage the laser deals to the protagonist
+    [Range(0, 300)][SerializeField] int _damage;
+
+    // Main laser sprite renderer
+    [SerializeField] SpriteRenderer _laserSpriteRenderer;
+
+    // Center sprite renderer for laser effects (glow, color adjustments)
+    [SerializeField] SpriteRenderer _laserCenterSpriteRenderer;
+
+    // 2D lights for laser visual effect
+    [SerializeField] Light2D _laserLight;
+    [SerializeField] Light2D _laserSpotLight;
+
+    // Base transform of the laser (start position)
+    [SerializeField] GameObject _laserBase;
+
+    // Initial values for lights and laser scale
+    float _laserLightIntensityStart;
+    float _laserSpotLightIntensityStart;
+    float _laserSpotLightSizeStart;
+    float _startLaserWidth;
+
+    // Material used for center glow effect
+    Material _laserCenterMaterial;
+
+    // Direction vector of the laser
+    Direction2 _directionLaser;
+
+    // Collider for laser hit detection
+    BoxCollider2D _boxCollider;
+
+    // Timers for pre-shoot delay and active shooting duration
+    Timer _shootBeforeTimer;
+    Timer _shootingTimer;
+
+    protected override void Awake()
+    {
+        base.Awake();
+
+        _boxCollider = GetComponent&lt;BoxCollider2D&gt;();
+
+        GetComponent&lt;TouchEnter&gt;().onTouch += OnTouchEnterAddOn;
+
+        _laserCenterMaterial = _laserCenterSpriteRenderer.material;
+        _laserLightIntensityStart = _laserLight.intensity;
+        _laserSpotLightIntensityStart = _laserSpotLight.intensity;
+
+        _startLaserWidth = _laserSpriteRenderer.transform.localScale.x;
+        _laserSpotLightSizeStart = _laserSpotLight.pointLightOuterRadius;
+        _boxCollider.enabled = false;
+    }
+
+    protected override void Start()
+    {
+        base.Start();
+
+        _shootBeforeTimer = new Timer(_setting.durationBeforeLaser);
+        _shootingTimer = new Timer(_setting.durationLaser);
+
+        ResetLaserVisuals();
+
+        RefreshLaser();
+    }
+
+    /// &lt;summary&gt;
+    /// Handles damage and visual effects when laser touches the protagonist.
+    /// &lt;/summary&gt;
+    void OnTouchEnterAddOn(Collider2D touched)
+    {
+        ProtagonistActor protagonistActor = touched.transform.parent.GetComponent&lt;ProtagonistActor&gt;();
+        protagonistActor.healthManager.Hurt(_damage, gameObject);
+        if (protagonistActor.healthManager.isDead) protagonistActor.sFXManager.PlaySound("SpikeDeath");
+        _sFXManager.PlaySound("LaserHit");
+
+        // Calculate position directly under protagonist along laser
+        Vector2 hitPosition = _directionLaser.vector2 * Vector2.Distance(protagonistActor.body.transform.position, _laserBase.transform.position);
+        Vector2 underProtagonistPos = (Vector2)_laserBase.transform.position + hitPosition;
+
+        // Push protagonist away from laser hit
+        protagonistActor.rb2D.velocity = new Direction2((Vector2)protagonistActor.body.transform.position - underProtagonistPos).vector2 * 10;
+
+        ParticleSystem impactFlash = protagonistActor.vFXManager.particles["ImpactFlashParticles"];
+        impactFlash.transform.position = underProtagonistPos;
+        impactFlash.Play();
+    }
+
+    /// &lt;summary&gt;
+    /// Coroutine controlling laser shooting behavior with intervals and visuals.
+    /// &lt;/summary&gt;
+    protected override IEnumerator ShootWInterval()
+    {
+        yield return null;
+        _shootIntervalTimer.Restart();
+
+        while (_isShootingWInterval)
+        {
+            if (_shootIntervalTimer.IsOver())
+            {
+                // Pre-shoot glow and sound
+                _laserCenterSpriteRenderer.color = new Color(_laserCenterSpriteRenderer.color.r, _laserCenterSpriteRenderer.color.g, _laserCenterSpriteRenderer.color.b, 1);
+                _shootBeforeTimer.Restart();
+                _sFXManager.PlaySound("LaserStartShooting");
+
+                _laserCenterMaterial.SetColor("_Color", new Color(1, 0, 0, 1));
+                _laserCenterMaterial.SetFloat("_Contrast", 0f);
+                _laserSpriteRenderer.transform.localScale = new Vector2(_startLaserWidth, _laserSpriteRenderer.transform.localScale.y);
+
+                // Pre-shoot animation
+                while (!_shootBeforeTimer.IsOver())
+                {
+                    float percentage = _shootBeforeTimer.PercentTime();
+                    _laserSpotLight.intensity = _laserSpotLightIntensityStart * percentage * .6f;
+                    _laserCenterSpriteRenderer.color = _laserCenterSpriteRenderer.color.SetAlpha(percentage * .7f + .1f);
+                    RefreshLaser();
+                    yield return null;
+                }
+
+                // If laser toggle was deactivated mid-pre-shoot, reset visuals
+                if (_toggle.isActive)
+                {
+                    ResetLaserVisuals();
+                    break;
+                }
+
+                _laserSpriteRenderer.color = _laserSpriteRenderer.color.SetAlpha(1);
+                _laserCenterMaterial.SetColor("_Color", Color.white);
+                _laserCenterMaterial.SetFloat("_Contrast", 2.5f);
+                _vFXManager.particles["LaserSmokeParticles"].Play();
+                _sFXManager.StopSound("LaserShooting");
+                _sFXManager.PlaySound("LaserShooting");
+                _boxCollider.enabled = true;
+
+                _shootingTimer.Restart();
+                Timer laserSizeChangeTimer = new(.2f);
+                float laserSizeChangeInverter = 0;
+
+                // Active shooting animation
+                while (!_shootingTimer.IsOver())
+                {
+                    if (!laserSizeChangeTimer.IsOver())
+                    {
+                        float percentage = math.abs(laserSizeChangeInverter - laserSizeChangeTimer.PercentTime());
+                        _laserLight.intensity = _laserLightIntensityStart * percentage * 1.2f;
+                        _laserSpriteRenderer.transform.localScale = new Vector2(_startLaserWidth * percentage, _laserSpriteRenderer.transform.localScale.y);
+                        _laserSpotLight.intensity = _laserLightIntensityStart * .6f + _laserLightIntensityStart * percentage * .6f;
+                        _laserSpotLight.pointLightOuterRadius = _laserSpotLightSizeStart + percentage * _laserSpotLightSizeStart;
+                        if (laserSizeChangeTimer.PercentTime() &gt; .8f) _boxCollider.enabled = false;
+                    }
+                    else if (_shootingTimer.TimeLeft() &lt; laserSizeChangeTimer.duration)
+                    {
+                        laserSizeChangeTimer.Restart();
+                        laserSizeChangeInverter = 1;
+                    }
+                    RefreshLaser();
+                    yield return null;
+                }
+
+                // Stop laser visuals and sound
+                _sFXManager.StopSound("LaserShooting");
+                ResetLaserVisuals();
+
+                _shootIntervalTimer.Restart();
+            }
+            yield return null;
+        }
+    }
+
+    /// &lt;summary&gt;
+    /// Updates laser collider, light and sprite scale based on environment hits.
+    /// &lt;/summary&gt;
+    void RefreshLaser()
+    {
+        _directionLaser = new(transform.rotation * Vector3.up);
+        RaycastHit2D hit = Physics2D.Raycast(_laserBase.transform.position, _directionLaser.vector2, 500, (_setting.groundLayer | _setting.notGroundLayer) & ~_setting.damager);
+
+        if (hit)
+        {
+            Vector2 dimensionLaser = new Vector2(_boxCollider.size.x, Vector2.Distance(hit.point, _laserBase.transform.position));
+            _boxCollider.size = dimensionLaser;
+            _laserSpriteRenderer.transform.localScale = new Vector2(_laserSpriteRenderer.transform.localScale.x, dimensionLaser.y + .75f);
+            transform.localPosition = new Vector2(transform.localPosition.x, dimensionLaser.y * .5f);
+
+            _laserLight.shapePath[0] = new Vector3(-.01f, 0, 0);
+            _laserLight.shapePath[1] = new Vector3(-.01f, dimensionLaser.y + .75f, 0);
+            _laserLight.shapePath[2] = new Vector3(.01f, dimensionLaser.y + .75f, 0);
+            _laserLight.shapePath[3] = new Vector3(.01f, 0, 0);
+
+            _vFXManager.particles["LaserSmokeParticles"].transform.position = hit.point;
+            _laserSpotLight.transform.position = hit.point;
+        }
+    }
+
+    /// &lt;summary&gt;
+    /// Resets laser visuals and disables collider
+    /// &lt;/summary&gt;
+    void ResetLaserVisuals()
+    {
+        _laserSpriteRenderer.color = _laserSpriteRenderer.color.SetAlpha(0f);
+        _laserCenterSpriteRenderer.color = _laserCenterSpriteRenderer.color.SetAlpha(0f);
+        _laserLight.intensity = 0f;
+        _laserSpotLight.intensity = 0f;
+        _boxCollider.enabled = false;
+        _vFXManager.particles["LaserSmokeParticles"].Stop();
+    }
+}</code>
 </pre>
 
-<h4 id="Liquids-TheMeltyWay">Liquids</h4>
+<h4>Conveyors</h4>
+
+<div class="image-video-container">
+  <video width="500" loop muted playsinline preload="none" data-src="Images/Contents/TheMeltyWay/Conveyors-up.mp4"
+    src="" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+  <video width="500" loop muted playsinline preload="none" data-src="Images/Contents/TheMeltyWay/Conveyors-left.mp4"
+    src="" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+<pre><code class="language-csharp">public class Conveyor : MonoBehaviour
+{
+  // Reference to the ClassicToggle component, used to enable/disable the conveyor
+  ClassicToggle _toggle;
+  // Reference to the CapsuleCollider2D if present (used for round-ended conveyors)
+  CapsuleCollider2D _capsuleColliders2D;
+  // Reference to the BoxCollider2D if CapsuleCollider2D is not present
+  BoxCollider2D _boxCollider2D;
+  // Half the length of the conveyor belt (calculated from the collider size)
+  float _conveyorHalfLength;
+  // Flag to determine if the conveyor is oriented horizontally
+  bool _isHorizontal;
+  // The force magnitude and direction applied by the conveyor.
+  [SerializeField] float _forceDirection;
+  // Flag to indicate if the conveyor is a simple square/box type without special curved end logic
+  [SerializeField] bool _squared;
+
+  void Awake()
+  {
+    _toggle = GetComponent&lt;ClassicToggle&gt;();
+    _toggle.onActivate += ActivateAddOn;
+
+    TouchStay touchStay = GetComponent&lt;TouchStay&gt;();
+    touchStay.onTouch += OnTouchStayAddOn;
+    touchStay.onExitTouch += OnTouchExitAddOn;
+
+    _capsuleColliders2D = GetComponent&lt;CapsuleCollider2D&gt;();
+    if (_capsuleColliders2D)
+    {
+      _conveyorHalfLength = (_capsuleColliders2D.size.x - _capsuleColliders2D.size.y) * .5f;
+    }
+    else
+    {
+      _boxCollider2D = GetComponent&lt;BoxCollider2D&gt;();
+      _conveyorHalfLength = _boxCollider2D.size.x * .5f;
+    }
+
+    // Determine if the conveyor is horizontal based on Z-rotation
+    _isHorizontal = Mathf.Approximately(transform.rotation.z, 0f);
+  }
+
+  /// &lt;summary&gt;
+  /// Called when the ClassicToggle is activated/deactivated.
+  /// Disables the collider when activated, effectively turning off the conveyor's physical interaction.
+  /// &lt;/summary&gt;
+  /// &lt;param name="activate"&gt;True if the toggle is active (conveyor off), False otherwise (conveyor on).&lt;/param&gt;
+  void ActivateAddOn(bool activate)
+  {
+    // Disable the relevant collider if the toggle is active (conveyor is 'off')
+    if (_capsuleColliders2D) _capsuleColliders2D.enabled = !activate;
+    else _boxCollider2D.enabled = !activate;
+  }
+
+  /// &lt;summary&gt;
+  /// Called when another Collider2D stays touching the conveyor.
+  /// Applies force to non-protagonist Rigidbodies and controls protagonist movement.
+  /// &lt;/summary&gt;
+  /// &lt;param name="touched"&gt;The Collider2D that is touching the conveyor.&lt;/param&gt;
+  void OnTouchStayAddOn(Collider2D touched)
+  {
+    // If conveyor is off, do nothing
+    if (_toggle.isActive) return;
+
+    if (!GameManager.instance.setting.protagonist.IsInLayerMask(touched.gameObject.layer))
+    {
+      // Not protagonist
+      Rigidbody2D rb2D = touched.GetComponent&lt;Rigidbody2D&gt;();
+
+      // Apply a simple horizontal velocity.
+      rb2D.velocity = new Vector2(-_forceDirection, rb2D.velocity.y);
+    }
+    else
+    {
+      // Protagonist
+      ProtagonistActor protagonist = touched.transform.parent.GetComponent&lt;ProtagonistActor&gt;();
+
+      Vector2 positionDifference = protagonist.body.transform.position - transform.position;
+      Vector2 forceDirection2D = Vector2.zero;
+
+      protagonist.frictionLess = true;
+      protagonist.conveyorTouching = this;
+
+      if (_isHorizontal)
+      {
+        // Horizontal conveyor
+        if (!_squared && Mathf.Abs(positionDifference.x) &gt; _conveyorHalfLength && protagonist.underPosition.y &lt; transform.position.y + .45f)
+        {
+          // Logic for the rounded ends of a capsule-like conveyor (if not squared)
+
+          positionDifference.x += _conveyorHalfLength * Mathf.Sign(positionDifference.x);
+
+          // Calculate force perpendicular to the position difference vector (tangent to the rounded end)
+          // The force is set to push the protagonist sideways around the end cap
+          forceDirection2D = Vector2.Perpendicular(positionDifference).normalized * _forceDirection;
+          forceDirection2D = new Vector2(forceDirection2D.x * 1.5f, forceDirection2D.y * .6f); // Apply multipliers
+
+          if (forceDirection2D.y &lt; 0) forceDirection2D.x = GetHorizontalCorrectDirection(positionDifference);
+        }
+        else
+        {
+          // Logic for the main, flat part of the conveyor
+
+          forceDirection2D.x = GetHorizontalCorrectDirection(positionDifference);
+        }
+
+        // Adjust protagonist's max speed while moving to account for the conveyor's push/pull
+        if (protagonist.isMoving)
+        {
+          if (protagonist.moveDirection.x &lt; 0) protagonist.maxStatisticActor.maxSpeed = protagonist.startMaxStatisticActor.maxSpeed + _forceDirection * .7f;
+          else protagonist.maxStatisticActor.maxSpeed = protagonist.startMaxStatisticActor.maxSpeed - _forceDirection * .7f;
+        }
+
+        // Apply velocity directly if not moving or jumping/using spell
+        else if (!protagonist.isJumping && !protagonist.wand.isUsingSpell)
+        {
+          if (!(protagonist.rb2D.velocity.y &gt;= .1f && forceDirection2D.y == 0))
+            protagonist.rb2D.velocity = new Vector2(forceDirection2D.x, forceDirection2D.y * .5f + protagonist.rb2D.velocity.y * .5f);
+        }
+      }
+      else
+      {
+        // Vertical conveyor
+
+        if (Mathf.Abs(positionDifference.y) &gt; _conveyorHalfLength && Math.Abs(protagonist.rb2D.velocity.y) &lt; _forceDirection && !_squared)
+        {
+          // Logic for the rounded ends of a capsule-like conveyor (if not squared)
+
+          if (positionDifference.y &lt;= 0) positionDifference.y += _conveyorHalfLength;
+          else positionDifference.y -= _conveyorHalfLength;
+
+          // Calculate force perpendicular to the position difference vector (tangent to the rounded end)
+          forceDirection2D = Vector2.Perpendicular(positionDifference).normalized * _forceDirection;
+        }
+        else
+        {
+          // Logic for the main, flat part of the conveyor
+
+          // Simple vertical force based on X position difference (assuming a vertical conveyor)
+          if (positionDifference.x &lt;= 0) forceDirection2D = new Vector2(-2f * Mathf.Sign(_forceDirection), -_forceDirection);
+          else forceDirection2D = new Vector2(-2f * Mathf.Sign(_forceDirection), _forceDirection);
+        }
+
+        // Apply velocity directly if not moving in the direction of the conveyor's side force, not jumping, not using spell and not recently hurt
+        if (!(protagonist.isMoving && Mathf.Sign(protagonist.moveDirection.x) == Mathf.Sign(positionDifference.x)) && !protagonist.isJumping && !protagonist.wand.isUsingSpell && protagonist.healthManager.lastTimeHurt.IsOver())
+        {
+          if (!(protagonist.rb2D.velocity.y &gt;= .1f && forceDirection2D.y == 0))
+            protagonist.rb2D.velocity = new Vector2(forceDirection2D.x, forceDirection2D.y * .5f + protagonist.rb2D.velocity.y * .5f);
+        }
+      }
+    }
+  }
+
+  /// &lt;summary&gt;
+  /// If protagonist on the other side we invert force direction
+  /// &lt;/summary&gt;
+  /// &lt;returns&gt;the correct force direction&lt;/returns&gt;
+  float GetHorizontalCorrectDirection(Vector2 positionDifference)
+  {
+    if (positionDifference.y &lt;= 0) return _forceDirection;
+    else return -_forceDirection;
+  }
+
+  /// &lt;summary&gt;
+  /// Called when another Collider2D exits touching the conveyor.
+  /// Resets protagonist's properties.
+  /// &lt;/summary&gt;
+  /// &lt;param name="exit"&gt;The Collider2D that is exiting the conveyor.&lt;/param&gt;
+  void OnTouchExitAddOn(Collider2D exit)
+  {
+    if (GameManager.instance.setting.protagonist.IsInLayerMask(exit.gameObject.layer))
+    {
+      ProtagonistActor protagonist = exit.transform.parent.GetComponent&lt;ProtagonistActor&gt;();
+
+      protagonist.frictionLess = false;
+      protagonist.maxStatisticActor.maxSpeed = protagonist.startMaxStatisticActor.maxSpeed;
+      protagonist.conveyorTouching = null;
+    }
+  }
+}</code>
+</pre>
+
+<h4>Sticky</h4>
+
+<div class="image-video-container">
+  <video width="500" loop muted playsinline preload="none" data-src="Images/Contents/TheMeltyWay/Sticky.mp4" src=""
+    type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+<h3 id="Liquids-TheMeltyWay">Liquids</h3>
 
 <div class="image-video-container">
   <video width="500" loop muted playsinline preload="none" data-src="Images/Contents/TheMeltyWay/Liquid-movement.mp4"
@@ -108,15 +1349,15 @@
 </div>
 
 <ul>
-  <li>Water</li>
-  <li>Lava: Damage if touched and make the player jump out</li>
-  <li>Liquid light: Glows when submerged for a limited time</li>
-  <li>Liquid slime: Causes player growth when submerged</li>
-  <li>Mud: Deadly if slime remains inside too long</li>
   <li>Wave effect</li>
+  <li>Water</li>
+  <li>Lava: Deals damage on contact and forces the slime to jump out</li>
+  <li>Liquid light: Glows when submerged for a limited time</li>
+  <li>Liquid slime: Causes the slime to grow when touching</li>
+  <li>Mud: Deadly if the slime remains inside for too long</li>
 </ul>
 
-<h5>Different type</h5>
+<h4>Different type</h4>
 
 <div class="image-video-container">
   <img src="Images/Contents/TheMeltyWay/All-liquids.jpg" loading="lazy">
@@ -125,7 +1366,7 @@
   <img src="Images/Contents/TheMeltyWay/Shader-Liquid.jpg" loading="lazy">
 </div>
 
-<h5>Wave effect</h5>
+<h4>Wave effect</h4>
 
 <div class="image-video-container">
   <video width="500" loop muted playsinline preload="none" data-src="Images/Contents/TheMeltyWay/Wave-effect.mp4" src=""
@@ -138,30 +1379,30 @@
 {
   // Index of this point inside the spline.
   int _index;
-  public int index { get => _index; set => _index = value; }
+  public int index { get =&gt; _index; set =&gt; _index = value; }
 
   // Current position of the liquid point in the spline.
   Vector2 _position;
-  public Vector2 position { get => _position; set => _position = value; }
+  public Vector2 position { get =&gt; _position; set =&gt; _position = value; }
 
   // Original height of the point before any wave deformation.
   float _initialHeight;
-  public float initialHeight { get => _initialHeight; }
+  public float initialHeight =&gt; _initialHeight;
 
   // Reference to the liquid point directly to the left (if any).
   LiquidPoint _leftLiquidPoint;
-  public LiquidPoint leftLiquidPoint { get => _leftLiquidPoint; set => _leftLiquidPoint = value; }
+  public LiquidPoint leftLiquidPoint { get =&gt; _leftLiquidPoint; set =&gt; _leftLiquidPoint = value; }
 
   // Reference to the liquid point directly to the right (if any).
   LiquidPoint _rightLiquidPoint;
-  public LiquidPoint rightLiquidPoint { get => _rightLiquidPoint; set => _rightLiquidPoint = value; }
+  public LiquidPoint rightLiquidPoint { get =&gt; _rightLiquidPoint; set =&gt; _rightLiquidPoint = value; }
 
   // Spline this point belongs to, used for updating visual positions.
   Spline _liquidSpline;
 
   // Vertical wave velocity influencing deformation.
   float _velocity = 0;
-  public float velocity { get => _velocity; set => _velocity = value; }
+  public float velocity { get =&gt; _velocity; set =&gt; _velocity = value; }
 
   // Current wave height produced by sine motion.
   float _wave = 0;
@@ -171,11 +1412,11 @@
 
   // Current step of the sinusoidal wave animation.
   float _step = 0;
-  public float step { get => _step; set => _step = value; }
+  public float step { get =&gt; _step; set =&gt; _step = value; }
 
   // Used to offset the sine wave phase for neighbor propagation.
   float _stepDisplacement = 0;
-  public float stepDisplacement { get => _stepDisplacement; set => _stepDisplacement = value; }
+  public float stepDisplacement { get =&gt; _stepDisplacement; set =&gt; _stepDisplacement = value; }
 
   /// &lt;summary&gt;
   /// Creates a new liquid point using a spline index and associates it with the given spline.
@@ -645,7 +1886,7 @@ public class Liquid : MonoBehaviour
 }</code>
 </pre>
 
-<h4 id="Tools-TheMeltyWay">Tools</h4>
+<h3 id="Tools-TheMeltyWay">Tools</h3>
 
 <div class="image-video-container">
   <video width="500" loop muted playsinline preload="none" data-src="Images/Contents/TheMeltyWay/Tools-editor.mp4"
@@ -656,21 +1897,21 @@ public class Liquid : MonoBehaviour
 
 <ul>
   <li>Toggle tools to link every toggleable element</li>
-  <li>Touch tools to have better control on collision</li>
-  <li>Usage of Unity tilemap</li>
-  <li>Usage of Autotiling to facilate placement</li>
-  <li>Automasker for level for the splatters</li>
-  <li>Usage of sprite atlas for performance</li>
-  <li>Homemade sfx tool</li>
+  <li>Touch tools for improved collision control</li>
+  <li>Use of Unity Tilemap</li>
+  <li>Use of Autotiling to facilitate placement</li>
+  <li>Automasker for level splatters</li>
+  <li>Use of sprite atlas for better performance</li>
+  <li>Custom SFX tool</li>
   <li>Save and load system</li>
-  <li>Usage of profiler to optimize the game</li>
-  <li>Easy modification of value for the interactable object</li>
-  <li>Usage of cinemachine for smooth, confined camera</li>
-  <li>Usage of the new input system</li>
+  <li>Use of the profiler to optimize the game</li>
+  <li>Easy modification of values for interactable objects</li>
+  <li>Use of Cinemachine for a smooth, confined camera</li>
+  <li>Use of Unity's latest Input System package</li>
 </ul>
 
 
-<h5>Toggle</h5>
+<h4>Toggle</h4>
 
 <div class="image-video-container">
   <video width="500" loop muted playsinline preload="none" data-src="Images/Contents/TheMeltyWay/Toggle.mp4" src=""
@@ -679,17 +1920,511 @@ public class Liquid : MonoBehaviour
   </video>
 </div>
 
-<pre><code class="language-csharp">
-  
-</code>
+<pre><code class="language-csharp">public class ClassicToggle : MonoBehaviour
+{
+  // Does the object is active?
+  protected bool _isActive = false;
+  public bool isActive =&gt; _isActive;
+  // Does the object was active?
+  protected bool _wasActive;
+  public bool wasActive =&gt; _wasActive;
+  public event Action&lt;bool&gt; onActivate;
+  // Invert the active/deactivate
+  [SerializeField] protected bool _inverted;
+  public bool inverted =&gt; _inverted;
+  // Object to activate when this one is activated
+  [SerializeField] protected ClassicToggle[] _interractablesAffected;
+  // Gem inital light intensity
+  protected float _initialGemLightIntensity;
+  public float initialGemLightIntensity =&gt; _initialGemLightIntensity;
+  // The color assigned to the gem and its light.
+  protected Color _gemColor;
+  public Color gemColor =&gt; _gemColor;
+  // The SpriteRenderer component for the visual gem element.
+  [SerializeField] protected SpriteRenderer _gem;
+  public SpriteRenderer gem =&gt; _gem;
+  // The Light2D component associated with the gem for visual effects.
+  protected Light2D _gemLight;
+  public Light2D gemLight =&gt; _gemLight;
+
+  protected virtual void Awake()
+  {
+    if (_gem != null) _gemLight = _gem.GetComponentInChildren&lt;Light2D&gt;();
+  }
+  protected virtual void Start()
+  {
+    Activate(false);
+
+    Color gemColor = Color.black;
+
+    if (_interractablesAffected.Length &gt; 0)
+    {
+      // Check if there is a _interractablesAffected that doesn't have a default color
+      foreach (ClassicToggle interractableAffected in _interractablesAffected)
+      {
+        if (interractableAffected.gem == null) continue;
+        if (interractableAffected.gem.color != Color.black)
+        {
+          gemColor = interractableAffected.gem.color;
+          break;
+        }
+      }
+
+      // If there is no color set by other toggle we get a new one and set ourself to this color
+      if (gemColor == Color.black)
+      {
+        gemColor = GameManager.instance.colorOfGems[UnityEngine.Random.Range(0, GameManager.instance.colorOfGems.Count)];
+        GameManager.instance.colorOfGems.Remove(gemColor);
+      }
+
+      _gem.color = gemColor;
+      _gemLight.color = gemColor;
+
+      // We change the gem color of all the _interractablesAffected
+      foreach (ClassicToggle interractableAffected in _interractablesAffected)
+      {
+        if (interractableAffected.gem == null) continue;
+        interractableAffected.gem.gameObject.SetActive(true);
+        interractableAffected.gem.color = gemColor;
+        interractableAffected.gem.GetComponentInChildren&lt;Light2D&gt;().color = gemColor;
+      }
+    }
+    else if (_gem != null)
+    {
+      if (_gem.color == Color.black) _gem.gameObject.SetActive(false);
+    }
+  }
+
+  /// &lt;summary&gt;
+  /// Sets the active state of the toggle, applying inversion, animations, and chaining effects.
+  /// &lt;/summary&gt;
+  /// &lt;param name="activate"&gt;The desired active state (true for on, false for off).&lt;/param&gt;
+  public virtual void Activate(bool activate)
+  {
+    if (_inverted) activate = !activate;
+    if (_isActive == activate) return;
+
+    if (_gem != null)
+    {
+      if (_inverted)
+      {
+        if (!activate)
+        {
+          AnimateDeactivationVisuals();
+        }
+      }
+      else if (activate)
+      {
+        AnimateDeactivationVisuals();
+      }
+    }
+
+    _isActive = activate;
+    OnActivateInvoke(_isActive);
+    ActivateInterractablesAffected(_isActive);
+    _wasActive = isActive;
+  }
+
+  /// &lt;summary&gt;
+  /// Starts the visual animation routines for 'deactivating' the gem
+  /// This function centralizes the animation calls.
+  /// &lt;/summary&gt;
+  protected void AnimateDeactivationVisuals()
+  {
+    Color gemColor = _gem.color;
+    float initialGemLightIntensity = _gemLight.intensity;
+
+    StartCoroutine(AnimationLibrary.AnimationIntensityLight(_gemLight.intensity, initialGemLightIntensity * 0, .1f, _gemLight));
+    StartCoroutine(AnimationLibrary.AnimationChangeColor(gemColor, new Color(.25f, .25f, .25f), .1f, _gem));
+  }
+
+  /// &lt;summary&gt;
+  /// Safely invokes the onActivate event with the new state.
+  /// &lt;/summary&gt;
+  /// &lt;param name="isActive"&gt;The current active state.&lt;/param&gt;
+  protected void OnActivateInvoke(bool isActive)
+  {
+    onActivate?.Invoke(isActive);
+  }
+
+  /// &lt;summary&gt;
+  /// Calls the Activate method on all associated toggles in the _interractablesAffected array.
+  /// &lt;/summary&gt;
+  /// &lt;param name="activate"&gt;The activation state to pass to the affected toggles.&lt;/param&gt;
+  public void ActivateInterractablesAffected(bool activate)
+  {
+    if (_interractablesAffected.Length == 0) return;
+    foreach (ClassicToggle interractableAffected in _interractablesAffected) interractableAffected.Activate(activate);
+  }
+}
+
+public class TimedToggle : ClassicToggle
+{
+  // The duration (in seconds) that the toggle will remain active after activation.
+  [Range(.3f, 100f)]
+  [SerializeField] float _stayActivatedTime;
+  // Timer instance used to track the remaining active time.
+  Timer _activateTimer;
+  public Timer activateTimer { get =&gt; _activateTimer; }
+  // Coroutine reference for the flashing sequence that runs when the slime is on it
+  Coroutine _flashGemWait = null;
+  // Coroutine reference for the flashing sequence that runs during the main cooldown
+  Coroutine _flashGemCooldownLeft = null;
+  // Reference to the SFXManager to play sound effects associated with the timer.
+  SFXManager _sFXManager;
+
+  protected override void Awake()
+  {
+    _activateTimer = new Timer(_stayActivatedTime);
+    _sFXManager = GetComponent&lt;SFXManager&gt;();
+    base.Awake();
+  }
+  protected override void Start()
+  {
+    base.Start();
+    if (_gem != null)
+    {
+      _initialGemLightIntensity = _gemLight.intensity;
+      _gemColor = _gem.color;
+    }
+  }
+  /// &lt;summary&gt;
+  /// Overrides the base Activate method to handle timer restart and visual feedback.
+  /// &lt;/summary&gt;
+  /// &lt;param name="activate"&gt;The desired activation state.&lt;/param&gt;
+  public override void Activate(bool activate)
+  {
+    if (activate)
+    {
+      // If activating and the toggle wasn't previously active (to prevent starting the flash animation mid-cycle),
+      // start the main FlashGem coroutine.
+      if (!_wasActive && _gem != null) StartCoroutine(FlashGem());
+      _activateTimer.Restart();
+    }
+    base.Activate(activate);
+  }
+
+  /// &lt;summary&gt;
+  /// Main coroutine that monitors the timer and switches between the two flashing routines.
+  /// &lt;/summary&gt;
+  IEnumerator FlashGem()
+  {
+    yield return null;
+
+    while (_isActive)
+    {
+      // Check if the time passed is short (the slime is still on the pressure plate)
+      if (_activateTimer.TimePass() &lt;= 0.2f)
+      {
+        if (_flashGemWait == null) _flashGemWait = StartCoroutine(FlashGemWait());
+      }
+      else if (_flashGemCooldownLeft == null) _flashGemCooldownLeft = StartCoroutine(FlashGemCooldownLeft());
+
+      yield return null;
+    }
+  }
+
+  /// &lt;summary&gt;
+  /// Flashing when the slime is standing on the pressure plate
+  /// &lt;/summary&gt;
+  IEnumerator FlashGemWait()
+  {
+    bool activate = false;
+    while (_isActive)
+    {
+      SFX sFX = _sFXManager.sFXs["GemFlash"];
+      sFX.audioSource.pitch = Mathf.Abs(1 - _activateTimer.PercentTime()) + .5f;
+      _sFXManager.PlaySound(sFX);
+
+      // If the other coroutine is running cancel it
+      if (_flashGemCooldownLeft != null)
+      {
+        StopCoroutine(_flashGemCooldownLeft);
+        _flashGemCooldownLeft = null;
+      }
+
+      ChangeAllGem(activate, .1f);
+      yield return new WaitForSeconds(.1f);
+
+      activate = !activate;
+    }
+  }
+  /// &lt;summary&gt;
+  /// Flashing coroutine for the main cooldown period. The flash speed and duration
+  /// dynamically adjust based on the percentage of time remaining.
+  /// &lt;/summary&gt;
+  IEnumerator FlashGemCooldownLeft()
+  {
+    float timeAnimation;
+    float timeAnimationOn;
+    float timeAnimationOff;
+
+    float timeLeft = _activateTimer.TimeLeft();
+    float timeAddedUp = _activateTimer.TimePass();
+
+    while (_isActive)
+    {
+      yield return null;
+      SFX sFX = _sFXManager.sFXs["GemFlash"];
+      sFX.audioSource.pitch = Mathf.Abs(1 - _activateTimer.PercentTime()) + .5f;
+      _sFXManager.PlaySound(sFX);
+
+      // If the other coroutine is running cancel it
+      if (_flashGemWait != null)
+      {
+        StopCoroutine(_flashGemWait);
+        _flashGemWait = null;
+      }
+
+      // Calculate base animation durations, scaled by the time percentage remaining.
+      timeAnimationOff = Mathf.Abs(_activateTimer.PercentTime()) * _activateTimer.duration * .25f;
+      timeAnimationOn = Mathf.Abs(_activateTimer.PercentTime(timeAnimationOff)) * _activateTimer.duration * .25f;
+      timeAnimation = timeAnimationOff + timeAnimationOn;
+
+      // If the calculated animation time plus a buffer (0.15f) exceeds the time left,
+      // recalculate the animation timings to finish exactly when the timer runs out.
+      if (timeAddedUp + timeAnimation + _activateTimer.duration * .15f &gt; timeLeft)
+      {
+        timeAnimation = timeLeft - timeAddedUp;
+        timeAnimationOff = timeAnimation * .4f;
+        timeAnimationOn = timeAnimation * .6f;
+      }
+
+      timeAddedUp += timeAnimation;
+
+      if (timeAnimation &gt; 0)
+      {
+        // Animate flash off
+        ChangeAllGem(false, timeAnimationOff);
+
+        yield return new WaitForSeconds(timeAnimationOff);
+      }
+
+      if (timeAnimation &gt; 0)
+      {
+        // Animate flash on
+        ChangeAllGem(true, timeAnimationOn);
+
+        yield return new WaitForSeconds(timeAnimationOn);
+      }
+    }
+  }
+
+  /// &lt;summary&gt;
+  /// Applies gem flash changes to this gem and all linked interactables.
+  /// &lt;/summary&gt;
+  void ChangeAllGem(bool active, float duration)
+  {
+    // Update main gem
+    ChangeGem(active, duration, _gem, _gemLight);
+    if (_interractablesAffected.Length != 0)
+    {
+      // Affect all of the _interractablesAffected as well
+      foreach (ClassicToggle interractableAffected in _interractablesAffected)
+      {
+        if (interractableAffected.gem != null)
+        {
+          ChangeGem(active, duration, interractableAffected.gem, interractableAffected.gemLight);
+        }
+      }
+    }
+  }
+
+  /// &lt;summary&gt;
+  /// Animates gem color and light intensity based on flash state.
+  /// &lt;/summary&gt;
+  void ChangeGem(bool active, float duration, SpriteRenderer gem, Light2D gemLight)
+  {
+    if (active)
+    {
+      // Animate intensifying light and returning to original color
+      StartCoroutine(AnimationLibrary.AnimationIntensityLight(_gemLight.intensity, _initialGemLightIntensity, duration, gemLight));
+      StartCoroutine(AnimationLibrary.AnimationChangeColor(new Color(.25f, .25f, .25f), _gemColor, duration, gem));
+    }
+    else
+    {
+      // Animate dimming light and darkening gem
+      StartCoroutine(AnimationLibrary.AnimationIntensityLight(_gemLight.intensity, _initialGemLightIntensity * 0, duration, gemLight));
+      StartCoroutine(AnimationLibrary.AnimationChangeColor(_gemColor, new Color(.25f, .25f, .25f), duration, gem));
+    }
+  }
+
+  /// &lt;summary&gt;
+  /// Checks the timer to ensure deactivation.
+  /// &lt;/summary&gt;
+  void FixedUpdate()
+  {
+    if (_isActive) if (_activateTimer.IsOver()) Activate(false);
+  }
+}</code>
 </pre>
 
-<h5>Touch</h5>
+<h4>Touch</h4>
 
+<pre><code class="language-csharp">public abstract class Touch : MonoBehaviour
+{
+  // Event invoked when a relevant Collider2D enters or stays within the trigger area.
+  public event Action&lt;Collider2D&gt; onTouch;
+  // Event invoked when a relevant Collider2D exits the trigger area.
+  public event Action&lt;Collider2D&gt; onExitTouch;
+  // Specifies which Unity physics layers are allowed to trigger the onTouch event.
+  [SerializeField] protected LayerMask _layerMaskToTouch;
+  // Specifies which Unity physics layers should be explicitly ignored by the trigger logic.
+  [SerializeField] protected LayerMask _layerMaskToIgnore;
+  // A Timer to enforce a minimum time interval between successful touch events.
+  [SerializeField] protected Timer _timerBetweenTouch = new Timer(.1f);
+  protected void OnTouchInvoke(Collider2D touched)
+  {
+    onTouch?.Invoke(touched);
+  }
+  protected void OnExitTouchInvoke(Collider2D touched)
+  {
+    onExitTouch?.Invoke(touched);
+  }
 
-<h5>Save and load</h5>
+  /// &lt;summary&gt;
+  /// Handles the physics collision/trigger exit event.
+  /// Filters exits based on LayerMasks and invokes the exit event.
+  /// &lt;/summary&gt;
+  /// &lt;param name="touched"&gt;The Collider2D that exited the trigger.&lt;/param&gt;
+  protected void OnTouchExit2D(Collider2D touched)
+  {
+    if (_layerMaskToIgnore.IsInLayerMask(touched.gameObject.layer) || !_layerMaskToTouch.IsInLayerMask(touched.gameObject.layer)) return;
 
-<pre><code class="language-csharp">/// &lt;summary&gt;
+    OnExitTouchInvoke(touched);
+  }
+  /// &lt;summary&gt;
+  /// If the object is in the object to ignore then we ignore collision in the future
+  /// &lt;/summary&gt;
+  /// &lt;param name="touched"&gt; The Collider2D that entered the trigger.&lt;/param&gt;
+  /// &lt;returns&gt;if we can or not touch&lt;/returns&gt;
+  protected bool CanTouch(Collider2D touched)
+  {
+    if (_layerMaskToIgnore.IsInLayerMask(touched.gameObject.layer))
+    {
+      Physics2D.IgnoreCollision(touched.gameObject.GetComponent&lt;Collider2D&gt;(), GetComponent&lt;Collider2D&gt;());
+      return false;
+    }
+    else if (!_layerMaskToTouch.IsInLayerMask(touched.gameObject.layer)) return false;
+
+    return true;
+  }
+}
+
+public abstract class TouchEnter : Touch
+{
+  // Stores the last GameObject that successfully triggered a touch event. Used for the cooldown/debounce logic.
+  GameObject _lastTouched;
+  // the number of time this object can be touch before getting deactivate
+  [Range(0, 10)] [SerializeField] int _numberTouchBeforeDeactivate;
+  // the number of time this object can be touch before getting deactivate at start
+  int _numberTouchBeforeDeactivateStart;
+  void Awake()
+  {
+    _numberTouchBeforeDeactivateStart = _numberTouchBeforeDeactivate;
+  }
+
+  /// &lt;summary&gt;
+  /// Handles the physics collision/trigger event
+  /// Filters collisions based on LayerMasks, applies cooldown and processes the touch limit.
+  /// &lt;/summary&gt;
+  /// &lt;param name="touched"&gt;The Collider2D that entered the trigger.&lt;/param&gt;
+  protected void OnTouchEnter2D(Collider2D touched)
+  {
+    if (!CanTouch(touched)) return;
+
+    if (_timerBetweenTouch.IsOverLoop()) _lastTouched = null;
+
+    // If the same hit in a row we ignore
+    if (_lastTouched == touched.gameObject) return;
+    _lastTouched = touched.gameObject;
+
+    OnTouchInvoke(touched);
+
+    if (_numberTouchBeforeDeactivate != 0)
+    {
+      _numberTouchBeforeDeactivate--;
+      if (_numberTouchBeforeDeactivate == 0)
+      {
+        // Add back the amount of touch before deactivate in case we want to reuse the object
+        _numberTouchBeforeDeactivate = _numberTouchBeforeDeactivateStart;
+        gameObject.SetActive(false);
+      }
+    }
+  }
+}
+
+public abstract class TouchStay : Touch
+{
+  /// &lt;summary&gt;
+  /// Handles the continuous physics collision/trigger event
+  /// Filters the collision based on LayerMasks and enforces a cooldown period.
+  /// &lt;/summary&gt;
+  /// &lt;param name="touched"&gt;The Collider2D that is staying within the trigger.&lt;/param&gt;
+  protected void OnTouchStay2D(Collider2D touched)
+  {
+    if (!CanTouch(touched)) return;
+    
+    if (!_timerBetweenTouch.IsOverLoop()) return;
+
+    OnTouchInvoke(touched);
+  }
+}
+
+public class TouchCollisionEnter : TouchEnter
+{
+  void OnCollisionEnter2D(Collision2D touched)
+  {
+    OnTouchEnter2D(touched.collider);
+  }
+  void OnCollisionExit2D(Collision2D exit)
+  {
+    OnTouchExit2D(exit.collider);
+  }
+}
+
+public class TouchCollisionStay : TouchStay
+{
+  void OnCollisionStay2D(Collision2D touched)
+  {
+    OnTouchStay2D(touched.collider);
+  }
+  void OnCollisionExit2D(Collision2D exit)
+  {
+    OnTouchExit2D(exit.collider);
+  }
+}
+
+public class TouchTriggerEnter : TouchEnter
+{
+  void OnTriggerEnter2D(Collider2D touched)
+  {
+    OnTouchEnter2D(touched);
+  }
+  void OnTriggerExit2D(Collider2D exit)
+  {
+    OnTouchExit2D(exit);
+  }
+}
+
+public class TouchTriggerStay : TouchStay
+{
+  void OnTriggerStay2D(Collider2D touched)
+  {
+    OnTouchStay2D(touched);
+  }
+  void OnTriggerExit2D(Collider2D exit)
+  {
+    OnTouchExit2D(exit);
+  }
+}</code>
+</pre>
+
+<h4>Save and load</h4>
+
+<pre><code class="language-csharp">[...]
+
+/// &lt;summary&gt;
 /// Save progress of the game
 /// &lt;/summary&gt;
 /// &lt;param name="levelManager"&gt;The level manager to use for saving.&lt;/param&gt;
@@ -805,7 +2540,7 @@ public class LevelData
 }</code>
 </pre>
 
-<h5>Level mask</h5>
+<h4>Level mask</h4>
 
 <div class="image-video-container">
   <video width="500" loop muted playsinline preload="none" data-src="Images/Contents/TheMeltyWay/Masking.mp4" src=""
@@ -814,7 +2549,7 @@ public class LevelData
   </video>
 </div>
 
-<h4 id="Polish-TheMeltyWay">Polish</h4>
+<h3 id="Polish-TheMeltyWay">Polish</h3>
 
 <div class="image-video-container">
   <video width="500" loop muted playsinline preload="none" data-src="Images/Contents/TheMeltyWay/Polish.mp4" src=""
@@ -828,31 +2563,31 @@ public class LevelData
   <li>Programmatic animation</li>
   <li>Visual feedback</li>
   <li>NPC animations for cutscenes</li>
-  <li>Transition between scene</li>
+  <li>Scene transitions</li>
   <li>Bug fixing</li>
-  <li>End of level and epic achivement animation</li>
-  <li>Build on every plateforme</li>
-  <li>Splatters on wall and object</li>
-  <li>Steam achivement</li>
+  <li>End of level and epic achievement animations</li>
+  <li>Builds for all platforms</li>
+  <li>Splatters on walls and objects</li>
+  <li>Steam achievements</li>
   <li>Title screen animation</li>
-  <li>Decorative interactable element</li>
-  <li>Big level selector</li>
-  <li>Different color for the slime</li>
-  <li>Flashing for timer and sound cue</li>
-  <li>Settings with all the essential</li>
-  <li>SFX</li>
-  <li>Random pitch and fade in, fade out for the sounds</li>
-  <li>Music that change based on the levels and blend simlessly</li>
+  <li>Decorative interactable elements</li>
+  <li>Large level selector</li>
+  <li>Different colors for the slime</li>
+  <li>Flashing indicators for timers and sound cues</li>
+  <li>Settings with all essential options</li>
+  <li>Sound effects</li>
+  <li>Random pitch and fade-in/fade-out for sounds</li>
+  <li>Music that changes based on levels and blends seamlessly</li>
   <li>Custom cursor</li>
 </ul>
 
-<h5>Settings</h5>
+<h4>Settings</h4>
 
 <div class="image-video-container">
   <img src="Images/Contents/TheMeltyWay/Settings.jpg" loading="lazy">
 </div>
 
-<h5>Transition</h5>
+<h4>Transition</h4>
 
 <div class="image-video-container">
   <video width="500" loop muted playsinline preload="none" data-src="Images/Contents/TheMeltyWay/Portal-transition.mp4"
@@ -865,13 +2600,13 @@ public class LevelData
   </video>
 </div>
 
-<h5>Dye</h5>
+<h4>Dye</h4>
 
 <div class="image-video-container">
   <img src="Images/Contents/TheMeltyWay/Dye.jpg" loading="lazy">
 </div>
 
-<h5>Level selection</h5>
+<h4>Level selection</h4>
 
 <div class="image-video-container">
   <img src="Images/Contents/TheMeltyWay/Level-selection.jpg" loading="lazy">

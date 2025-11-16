@@ -1,6 +1,35 @@
-const gamesThumbnail = document.querySelectorAll('.game-thumbnail');
-
 animationId = 0;
+
+const presElement = document.querySelectorAll('pre');
+
+presElement.forEach(preElement => {
+  preElement.addEventListener('click', () => {
+    const selection = window.getSelection().toString();
+
+    if (!selection) {
+      preElement.classList.toggle('open-pre');
+    }
+
+    const gameContentSpace = document.querySelector('.game-content-space');
+    const game = document.querySelector('.open');
+
+    if (game) {
+      gameContent = game.querySelector('.game-container');
+      animationId = requestAnimationFrame(() => syncHeight(gameContentSpace, gameContent));
+
+      console.log("aaa");
+      
+
+      setTimeout(() => {
+        cancelAnimationFrame(animationId);
+        gameContentSpace.style.height = gameContent.offsetHeight + "px";
+      }, 500);
+    }
+
+  });
+});
+
+const gamesThumbnail = document.querySelectorAll('.game-thumbnail');
 
 gamesThumbnail.forEach(gameThumbnail => {
   gameThumbnail.addEventListener('click', () => {
@@ -138,6 +167,7 @@ const observer = new IntersectionObserver((entries) => {
     const hasSrc = video.currentSrc && video.currentSrc !== "";
     if (entry.isIntersecting && hasSrc) {
       video.currentTime = 0;
+      
       video.play();
       videosToDisable.push(video);
     } else {
@@ -146,7 +176,7 @@ const observer = new IntersectionObserver((entries) => {
     }
   });
 }, {
-  threshold: 0
+  threshold: 0.5
 });
 
 videos.forEach(video => observer.observe(video));

@@ -83,7 +83,7 @@ const allGames = {
       logo: true,
       date: "December 2021 ~ Present", // December 2021 ~ March 2026
       technologies: [6, 0, 7, 8, 10],
-      description: "A puzzle-platformer where players control a shape-shifting slime, navigating vibrant levels, solving puzzles, avoiding traps and using creative movement to explore hidden paths and overcome challenges.",
+      description: "A puzzle-platformer where players control a shape shifting slime, navigating vibrant levels, solving puzzles, avoiding traps and using creative movement to explore hidden paths and overcome challenges.",
       role: "Game Programmer, Artist, Game Design, Marketer",
       team: 2,
       time: "4 years",
@@ -96,7 +96,7 @@ const allGames = {
     //   logo: true,
     //   date: "October 2025 ~ November 2025",
     //   technologies: [6, 0, 7, 10],
-    //   description: "A cardboard-styled game where a team of black cats organizes and automates crafting hot cocoa, pumpkin pie and many more.",
+    //   description: "A cardboard styled game where a team of black cats organizes and automates crafting hot cocoa, pumpkin pie and many more.",
     //   role: "Lead Programmer, AI Programmer, Gameplay Programmer, UI Programmer, Game Design, Artist",
     //   team: 7,
     //   time: "2 weeks",
