@@ -66,19 +66,6 @@ const allStores = {
 const allGames = {
   list: [
     {
-      name: "THE SIGNAL: Stranded on Sirenis",
-      logo: true,
-      date: "Janurary 2025 ~ October 2025",
-      technologies: [5, 1, 7, 8],
-      description: "A survival crafting extraction shooter game where players explore diverse environments, gather resources, build bases and strategically combat on the alien planet.",
-      role: "Gameplay Programmer",
-      team: 21,
-      time: "9 months",
-      genre: ["Survival", "Crafting", "Extraction shooter", "Base building"],
-      style: ["Science fiction", "Realistic", "Stylize"],
-      link: ["https://store.steampowered.com/app/1830110/THE_SIGNAL_Stranded_on_Sirenis/"],
-    },
-    {
       name: "The Melty Way",
       logo: true,
       date: "December 2021 ~ Present", // December 2021 ~ March 2026
@@ -90,6 +77,19 @@ const allGames = {
       genre: ["Plateformer", "Puzzle", "Adventure"],
       style: ["Pixel Art", "Fantasy"],
       link: ["https://store.steampowered.com/app/3990570/The_Melty_Way/"],
+    },
+    {
+      name: "THE SIGNAL: Stranded on Sirenis",
+      logo: true,
+      date: "Janurary 2025 ~ October 2025",
+      technologies: [5, 1, 7, 8],
+      description: "A survival crafting extraction shooter game where players explore diverse environments, gather resources, build bases and strategically combat on the alien planet.",
+      role: "Gameplay Programmer",
+      team: 21,
+      time: "9 months",
+      genre: ["Survival", "Crafting", "Extraction shooter", "Base building"],
+      style: ["Science fiction", "Realistic", "Stylize"],
+      link: ["https://store.steampowered.com/app/1830110/THE_SIGNAL_Stranded_on_Sirenis/"],
     },
     // {
     //   name: "Pawtumn Harvest",
@@ -134,7 +134,7 @@ const allGames = {
       name: "Sightline",
       logo: true,
       date: "Feburary 2023",
-      technologies: [6, 0, 10],
+      technologies: [6, 0, 7, 10],
       description: "A cunning outlaw in the Wild West, planning heists, dodging sheriffs and looting banks for fortune and freedom.",
       role: "Game Programmer, Artist, Game Design",
       team: 3,

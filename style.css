@@ -312,6 +312,7 @@ ul {
 }
 
 .game-container {
+  width: 100%;
   max-width: 1060px;
   display: flex;
   flex-direction: column;
@@ -477,6 +478,7 @@ ul {
 }
 
 .game-content-header-tag {
+  font-size: 20px;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -508,6 +510,7 @@ ul {
 .game-content-header-role,
 .game-content-header-team,
 .game-content-header-time {
+  font-size: 20px;
   display: flex;
   gap: 5px;
   align-items: center;
