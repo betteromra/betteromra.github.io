@@ -17,14 +17,15 @@ presElement.forEach(preElement => {
       gameContent = game.querySelector('.game-container');
       animationId = requestAnimationFrame(() => syncHeight(gameContentSpace, gameContent));
 
-      console.log("aaa");
-      
-
       setTimeout(() => {
         cancelAnimationFrame(animationId);
         gameContentSpace.style.height = gameContent.offsetHeight + "px";
       }, 500);
     }
+
+    setTimeout(() => {
+      gameContentSpace.style.height = gameContent.offsetHeight + "px";
+    }, 510);
 
   });
 });
@@ -59,8 +60,11 @@ gamesThumbnail.forEach(gameThumbnail => {
 
       setTimeout(() => {
         cancelAnimationFrame(animationId);
-        gameContentSpace.style.height = gameContent.offsetHeight + "px";
       }, 200);
+
+      setTimeout(() => {
+        gameContentSpace.style.height = gameContent.offsetHeight + "px";
+      }, 210);
 
       const gameParent = game.parentElement;
 
@@ -167,7 +171,7 @@ const observer = new IntersectionObserver((entries) => {
     const hasSrc = video.currentSrc && video.currentSrc !== "";
     if (entry.isIntersecting && hasSrc) {
       video.currentTime = 0;
-      
+
       video.play();
       videosToDisable.push(video);
     } else {
