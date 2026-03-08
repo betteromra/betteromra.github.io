@@ -76,7 +76,7 @@ const allGames = {
       time: "4 years",
       genre: ["Plateformer", "Puzzle", "Adventure"],
       style: ["Pixel Art", "Fantasy"],
-      link: ["https://store.steampowered.com/app/3990570/The_Melty_Way/"],
+      link: ["https://store.steampowered.com/app/3990570/The_Melty_Way/", "https://betteromra.itch.io/the-melty-way"],
     },
     {
       name: "THE SIGNAL: Stranded on Sirenis",
